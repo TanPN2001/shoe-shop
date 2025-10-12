@@ -1,0 +1,11 @@
+Anh list ra các thứ nè:
+- Login cho trang quản lý sản phẩm (Free) ok
+- Thêm xóa, sửa sản phẩm (A) ok
+- Phần bán hàng + thông tin khách hàng (A) ok
+- Chữ chạy : Das / nike / mlb / asic / puma / new balance / mcqueen / dior / LV / converse / gucci / vans (A)
+- Mục nổi bật :  giày sneaker / giày thể thao/ mã hottrend / giày đánh pick (A)
+
+- Ấn vào mục “ giày sneaker “ sẽ hiện : giày sneaker nam / giày sneaker nữ / giày mới về / giày chạy bộ / giày slipon / giày thời trang (B)
+- Tích điểm (B)
+
+Trong đó A là các tính năng cơ bản, B là các tính năng nâng cao
