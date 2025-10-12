@@ -14,12 +14,13 @@ type ProductDocument = {
     averageStar: number
     tags: any
     slug: string
-    totalVarients?: number
+    totalVariants?: number
     createdBy: any
     createdAt: string
     updatedAt: string
     item_item_type_fk: ItemItemTypeFk
     item__variant_item_fk?: any[]
+    listSizeVariants?: any[]
   }
   
   export interface ItemItemTypeFk {

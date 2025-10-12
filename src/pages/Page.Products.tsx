@@ -20,16 +20,35 @@ function ProductsPage() {
         const items = res.data.data;
         const paging = res.data.paging;
 
-        const updatedProducts = items.map((product) => {
-            const variants = (product?.item__variant_item_fk as any[]) || [];
-            const total = variants
-            .filter((v) => v.status === 1)
-            .reduce((sum, v) => sum + (v.quantity || 0), 0);
+        const updatedProducts = await Promise.all(
+            items.map(async (product) => {
+                // const variants = (product?.item__variant_item_fk as any[]) || []; 
+                // const total = variants 
+                //         .filter((v) => v.status === 1) 
+                //         .reduce((sum, v) => sum + (v.quantity || 0), 0);
 
-            return { ...product, totalVarients: total };
-        });
+                const re = await api.get(`/item-variant/detail-by-item/${product?.itemId}`);
+                console.log("loan re: ", re);
+                const variants = re.data?.data || [];
 
-        // console.log("updatedProducts: ", updatedProducts);
+                // Tính tổng quantity của variant có status = 1
+                const total = variants
+                    .filter((v: any) => v.status === 1)
+                    .reduce((sum: number, v: any) => sum + (v.quantity || 0), 0);
+                const listSize = variants.map((v: any) => ({
+                    name: v?.item_variant_item_size_fk?.name,
+                    gender: v?.item_variant_item_size_fk?.gender,
+                }))
+                console.log("loan listSize: ", listSize);
+                return { 
+                    ...product, 
+                    totalVariants: total, 
+                    listSizeVariants: listSize,
+                };
+            })
+        );
+
+        console.log("updatedProducts: ", updatedProducts);
         setListProduct({ data: updatedProducts, paging });
         };
 
@@ -115,9 +134,20 @@ function ProductsPage() {
         // },
         {
             title: "Tồn kho",
-            dataIndex: "totalVarients",
-            key: "totalVarients",
-            render: (totalVarients: number) => totalVarients ?? 0,
+            dataIndex: "totalVariants",
+            key: "totalVariants",
+            render: (totalVariants: number) => totalVariants ?? 0,
+        },
+        {
+            title: "Size tồn kho",
+            dataIndex: "listSizeVariants",
+            key: "listSizeVariants",
+            render: (listSizeVariants: any[]) => {
+                if (!listSizeVariants?.length) return "—";
+                return listSizeVariants
+                .map((v) => `${v.name}: ${v.gender}`)
+                .join(", ");
+            },
         },
         {
             title: "Ngày tạo",
