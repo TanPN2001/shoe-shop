@@ -17,8 +17,22 @@ function ProductsPage() {
 
     const loadItems = async () => {
         const res = await api.get<{ data: ProductDocument[]; paging: Paging }>("/item/get");
-        setListProduct({ data: res.data.data, paging: res.data.paging });
-    }
+        const items = res.data.data;
+        const paging = res.data.paging;
+
+        const updatedProducts = items.map((product) => {
+            const variants = (product?.item__variant_item_fk as any[]) || [];
+            const total = variants
+            .filter((v) => v.status === 1)
+            .reduce((sum, v) => sum + (v.quantity || 0), 0);
+
+            return { ...product, totalVarients: total };
+        });
+
+        // console.log("updatedProducts: ", updatedProducts);
+        setListProduct({ data: updatedProducts, paging });
+        };
+
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -32,10 +46,10 @@ function ProductsPage() {
     const [editingProduct, setEditingProduct] = useState<ProductDocument | null>(null);
     const [variantProduct, setVariantProduct] = useState<ProductDocument | null>(null);
 
-    useEffect(() => {
+     useEffect(() => {
 
         loadItems()
-
+        
     }, [])
 
     const deleteProduct = async (rec: ProductDocument) => {
@@ -99,6 +113,12 @@ function ProductsPage() {
         //     dataIndex: "averageStar",
         //     key: "averageStar",
         // },
+        {
+            title: "Tồn kho",
+            dataIndex: "totalVarients",
+            key: "totalVarients",
+            render: (totalVarients: number) => totalVarients ?? 0,
+        },
         {
             title: "Ngày tạo",
             dataIndex: "createdAt",
@@ -321,6 +341,9 @@ function ProductsPage() {
             setUploading(false);
         }
     };
+
+
+
 
     return (
         <div>
