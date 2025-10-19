@@ -1,0 +1,12 @@
+
+.hide-scrollbar {
+  scrollbar-width: thin; /* Firefox: ẩn thanh cuộn nhưng vẫn cho phép cuộn */
+  scrollbar-color: transparent transparent; /* Firefox: màu trong suốt */
+  -ms-overflow-style: none;  /* IE and Edge: ẩn thanh cuộn */
+  overscroll-behavior: contain; /* vẫn cho phép cuộn bằng chuột */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+  background: transparent; /* Chrome, Safari, Opera: ẩn thanh cuộn nhưng vẫn cuộn được */
+}
