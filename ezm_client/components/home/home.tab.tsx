@@ -14,7 +14,7 @@ type Props = {
 export default function HomeTab({ categories }: Props) {
     return (
         <div className="flex !w-full flex-col gap-6">
-            <Tabs defaultValue={String(categories[0].itemTypeId)} className="w-full">
+            <Tabs defaultValue={String(categories[0].itemTypeId || 0)} className="w-full">
                 <div className="overflow-x-auto w-full hide-scrollbar">
                     <TabsList className="bg-transparent gap-4 lg:gap-16 flex-nowrap min-w-max w-full">
 
