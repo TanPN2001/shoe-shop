@@ -4,6 +4,7 @@ import {
   UserOutlined,
   ShoppingCartOutlined,
   AppstoreOutlined,
+  GiftOutlined,
 } from '@ant-design/icons';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import UsersPage from './pages/Page.Users';
@@ -12,6 +13,7 @@ import CategoriesPage from './pages/Page.Categories';
 import ProductColorsPage from './pages/Page.ProductColors';
 import ProductSizesPage from './pages/Page.ProductSizes';
 import OrdersPage from './pages/Page.Orders';
+import VouchersPage from './pages/Page.Vouchers';
 import LoginPage from './pages/Page.Login';
 import { useAtom } from 'jotai';
 import { AUTH } from './store';
@@ -49,6 +51,11 @@ const items = [
     icon: <ShoppingCartOutlined />,
     label: <Link to="/orders">Quản lý đơn hàng</Link>,
   },
+  {
+    key: 'vouchers',
+    icon: <GiftOutlined />,
+    label: <Link to="/vouchers">Quản lý voucher</Link>,
+  },
 ];
 
 const Protected: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -84,6 +91,7 @@ const RootLayout: React.FC = () => (
               <Route path="/categories" element={<Protected><CategoriesPage /></Protected>} />
               <Route path="/product-colors" element={<Protected><ProductColorsPage /></Protected>} />
               <Route path="/product-sizes" element={<Protected><ProductSizesPage /></Protected>} />
+              <Route path="/vouchers" element={<Protected><VouchersPage /></Protected>} />
               <Route path="*" element={<Navigate to="/products" replace />} />
             </Routes>
           </div>
