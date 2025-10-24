@@ -51,6 +51,12 @@ function UsersPage() {
             key: "createdAt",
             render: (date: Date) => new Date(date).toLocaleString(),
         },
+           {
+            title: "Điểm",
+            dataIndex: "point",
+            key: "point",
+            // render: (date: Date) => new Date(date).toLocaleString(),
+        },
         {
             title: "Ngày cập nhật",
             dataIndex: "updatedAt",
