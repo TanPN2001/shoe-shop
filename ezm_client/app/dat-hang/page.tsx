@@ -61,6 +61,8 @@ function OrderPage() {
 
     const total = cart.reduce((total, item) => total + (Number(item.variants.price) * item.count), 0)
 
+    console.log("cart: ", cart)
+
     return <div className="px-4 lg:px-12">
         <div className="text-white flex items-center gap-2">
             <p className="text-lg text-ezman-red font-bold font-ezman">EZMAN</p>
@@ -77,6 +79,11 @@ function OrderPage() {
                         <input name="name" onChange={changingForm} type="text" placeholder="Họ tên người nhận" className="w-full bg-white text-black px-4 py-2" />
                         <input name="phone" onChange={changingForm} type="text" placeholder="Số điện thoại" className="w-full bg-white text-black px-4 py-2" />
                         <input name="address" onChange={changingForm} type="text" placeholder="Địa chỉ cụ thể" className="w-full bg-white text-black px-4 py-2" />
+                    </div>
+                    <p className="mt-6 text-xl">Mã giảm giá</p>
+
+                    <div className="mt-4 space-y-6">
+                        <input name="voucherCode" onChange={changingForm} type="text" placeholder="Nhập mã giảm giá" className="w-full bg-white text-black px-4 py-2" />
                     </div>
                 </div>
 
