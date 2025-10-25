@@ -1,7 +1,19 @@
-import { useEffect, useState } from "react"
-import type { ProductDocument } from "../types/Product"
-import { InitPaging, type Paging } from "../paging"
-import { Table, Image, Modal, Button, Form, Input, Upload, message, Select, InputNumber, Popconfirm } from "antd";
+import { useEffect, useState } from "react";
+import type { ProductDocument } from "../types/Product";
+import { InitPaging, type Paging } from "../paging";
+import {
+    Table,
+    Image,
+    Modal,
+    Button,
+    Form,
+    Input,
+    Upload,
+    message,
+    Select,
+    InputNumber,
+    Popconfirm,
+} from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { PlusOutlined, UploadOutlined } from "@ant-design/icons";
 import { useAtomValue } from "jotai";
@@ -10,24 +22,31 @@ import api from "../api";
 import ListVariant from "../components/ListVariants";
 
 function ProductsPage() {
-    const [listProduct, setListProduct] = useState<{ data: ProductDocument[], paging: Paging }>({ data: [], paging: InitPaging });
-    const categories = useAtomValue(CATEGORIES)
-    const colors = useAtomValue(COLORS)
-    const sizes = useAtomValue(SIZES)
+    const [listProduct, setListProduct] = useState<{
+        data: ProductDocument[];
+        paging: Paging;
+    }>({ data: [], paging: InitPaging });
+    const categories = useAtomValue(CATEGORIES);
+    const colors = useAtomValue(COLORS);
+    const sizes = useAtomValue(SIZES);
 
     const loadItems = async () => {
-        const res = await api.get<{ data: ProductDocument[]; paging: Paging }>("/item/get");
+        const res = await api.get<{ data: ProductDocument[]; paging: Paging }>(
+            "/item/get"
+        );
         const items = res.data.data;
         const paging = res.data.paging;
 
         const updatedProducts = await Promise.all(
             items.map(async (product) => {
-                // const variants = (product?.item__variant_item_fk as any[]) || []; 
-                // const total = variants 
-                //         .filter((v) => v.status === 1) 
+                // const variants = (product?.item__variant_item_fk as any[]) || [];
+                // const total = variants
+                //         .filter((v) => v.status === 1)
                 //         .reduce((sum, v) => sum + (v.quantity || 0), 0);
 
-                const re = await api.get(`/item-variant/detail-by-item/${product?.itemId}`);
+                const re = await api.get(
+                    `/item-variant/detail-by-item/${product?.itemId}`
+                );
                 console.log("loan re: ", re);
                 const variants = re.data?.data || [];
 
@@ -37,12 +56,12 @@ function ProductsPage() {
                     .reduce((sum: number, v: any) => sum + (v.quantity || 0), 0);
                 const listSize = variants.map((v: any) => ({
                     name: v?.item_variant_item_size_fk?.name,
-                    gender: v?.item_variant_item_size_fk?.gender,
-                }))
+                    quantity: v?.quantity,
+                }));
                 console.log("loan listSize: ", listSize);
-                return { 
-                    ...product, 
-                    totalVariants: total, 
+                return {
+                    ...product,
+                    totalVariants: total,
                     listSizeVariants: listSize,
                 };
             })
@@ -50,8 +69,7 @@ function ProductsPage() {
 
         console.log("updatedProducts: ", updatedProducts);
         setListProduct({ data: updatedProducts, paging });
-        };
-
+    };
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -62,19 +80,29 @@ function ProductsPage() {
     const [uploading, setUploading] = useState(false);
     const [imageList, setImageList] = useState<any[]>([]);
     const [editImageList, setEditImageList] = useState<any[]>([]);
-    const [editingProduct, setEditingProduct] = useState<ProductDocument | null>(null);
-    const [variantProduct, setVariantProduct] = useState<ProductDocument | null>(null);
+    const [editingProduct, setEditingProduct] = useState<ProductDocument | null>(
+        null
+    );
+    const [variantProduct, setVariantProduct] = useState<ProductDocument | null>(
+        null
+    );
 
-     useEffect(() => {
+    useEffect(() => {
+        loadItems();
+    }, []);
 
-        loadItems()
-        
-    }, [])
+    const [variantsS, setVariantsS] = useState<any>([]);
+
+    const updateVariant = (index: any, newVariant: any) => {
+        setVariantsS((prev: any) =>
+            prev.map((v: any, i: any) => (i === index ? newVariant : v))
+        );
+    };
 
     const deleteProduct = async (rec: ProductDocument) => {
-        await api.post("/item/delete", { itemId: rec.itemId })
-        loadItems()
-    }
+        await api.post("/item/delete", { itemId: rec.itemId });
+        loadItems();
+    };
 
     const columns: ColumnsType<ProductDocument> = [
         {
@@ -114,13 +142,17 @@ function ProductsPage() {
             title: "Giá",
             dataIndex: "price",
             key: "price",
-            render: (price: string) => Number(price).toLocaleString("vi-VN", { style: "currency", currency: "VND" }),
+            render: (price: string) =>
+                Number(price).toLocaleString("vi-VN", {
+                    style: "currency",
+                    currency: "VND",
+                }),
         },
         {
             title: "Giảm giá",
             dataIndex: "discount",
             key: "discount",
-            render: (discount: any) => discount ? discount + "%" : "--",
+            render: (discount: any) => (discount ? discount + "%" : "--"),
         },
         // {
         //     title: "Số lượt mua",
@@ -145,8 +177,8 @@ function ProductsPage() {
             render: (listSizeVariants: any[]) => {
                 if (!listSizeVariants?.length) return "—";
                 return listSizeVariants
-                .map((v) => `${v.name}: ${v.gender}`)
-                .join(", ");
+                    .map((v) => `${v.name}: ${v.quantity}`)
+                    .join(", ");
             },
         },
         {
@@ -183,7 +215,9 @@ function ProductsPage() {
                         cancelText="Hủy"
                         onConfirm={() => deleteProduct(record)}
                     >
-                        <Button type="primary" danger size="small">Xóa</Button>
+                        <Button type="primary" danger size="small">
+                            Xóa
+                        </Button>
                     </Popconfirm>
                 </div>
             ),
@@ -204,10 +238,15 @@ function ProductsPage() {
     // Handle form submit (create)
     const handleOk = async () => {
         try {
+            console.log("Loanhtm: ");
             setUploading(true);
+            console.log("Loanhtm: ", form);
             const values = await form.validateFields();
+            console.log("Loanhtm variantsS: ", variantsS);
             // images: array of {url}
-            const images = imageList.map(file => file.url || file.thumbUrl || file.response?.url).filter(Boolean);
+            const images = imageList
+                .map((file) => file.url || file.thumbUrl || file.response?.url)
+                .filter(Boolean);
 
             if (images.length === 0) {
                 message.error("Vui lòng upload ít nhất 1 ảnh.");
@@ -215,13 +254,14 @@ function ProductsPage() {
                 return;
             }
 
-            console.log(values, images)
+            console.log(">>> ", values, images);
 
-            await api.post("/item/create", {
+            await api.post("/item/create-variation", {
                 ...values,
                 thumbnail: images[0],
-                images: images
-            })
+                images: images,
+                variants: variantsS,
+            });
 
             message.success("Tạo sản phẩm thành công!");
             setIsModalOpen(false);
@@ -240,12 +280,12 @@ function ProductsPage() {
 
         try {
             const response = await api.post("/media/upload-s3", formData, {
-                headers: { "Content-Type": "multipart/form-data" }
+                headers: { "Content-Type": "multipart/form-data" },
             });
-            console.log(193, response.data.data.URL)
+            console.log(193, response.data.data.URL);
             // Assume response.data.url is the uploaded image URL
-            file.url = response.data.data.URL
-            file.thumbUrl = response.data.data.URL
+            file.url = response.data.data.URL;
+            file.thumbUrl = response.data.data.URL;
             onSuccess(response.data, file);
         } catch (error) {
             onError?.(error);
@@ -255,7 +295,7 @@ function ProductsPage() {
     // ---------- VARIANT LOGIC ----------
     const handleAddVariant = (product: ProductDocument) => {
         setVariantProduct(product);
-        console.log(product)
+        console.log(product);
         setIsVariantModalOpen(true);
         variantForm.setFieldsValue({
             itemId: product.itemId,
@@ -298,9 +338,12 @@ function ProductsPage() {
         setEditingProduct(product);
         setIsEditModalOpen(true);
 
-        const sourceImages: string[] = Array.isArray(product.images) && product.images.length > 0
-            ? product.images
-            : (product.thumbnail ? [product.thumbnail] : []);
+        const sourceImages: string[] =
+            Array.isArray(product.images) && product.images.length > 0
+                ? product.images
+                : product.thumbnail
+                    ? [product.thumbnail]
+                    : [];
 
         const fileList = sourceImages.map((imgUrl, idx) => ({
             uid: `${idx}`,
@@ -335,7 +378,9 @@ function ProductsPage() {
         try {
             setUploading(true);
             const values = await editForm.validateFields();
-            const images = editImageList.map(file => file.url || file.thumbUrl || file.response?.url).filter(Boolean);
+            const images = editImageList
+                .map((file) => file.url || file.thumbUrl || file.response?.url)
+                .filter(Boolean);
             if (images.length === 0) {
                 message.error("Vui lòng upload ít nhất 1 ảnh.");
                 setUploading(false);
@@ -372,12 +417,14 @@ function ProductsPage() {
         }
     };
 
-
-
-
     return (
         <div>
-            <Button type="primary" icon={<PlusOutlined />} style={{ marginBottom: 16 }} onClick={showModal}>
+            <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                style={{ marginBottom: 16 }}
+                onClick={showModal}
+            >
                 Thêm sản phẩm
             </Button>
             <Table
@@ -399,6 +446,222 @@ function ProductsPage() {
                 confirmLoading={uploading}
                 okText="Tạo"
                 cancelText="Hủy"
+                width={1100}
+            // destroyOnHidden
+            >
+                <div style={{ display: "flex", gap: 24 }}>
+                    {/* CỘT TRÁI: Thông tin sản phẩm */}
+                    <Form
+                        form={form}
+                        layout="vertical"
+                        preserve={false}
+                        style={{ flex: 1 }}
+                    >
+                        <Form.Item
+                            label="Tên sản phẩm"
+                            name="name"
+                            rules={[
+                                { required: true, message: "Vui lòng nhập tên sản phẩm" },
+                            ]}
+                        >
+                            <Input placeholder="Nhập tên sản phẩm" />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Loại sản phẩm"
+                            name="itemTypeId"
+                            rules={[
+                                { required: true, message: "Vui lòng chọn loại sản phẩm" },
+                            ]}
+                        >
+                            <Select
+                                options={categories.map((i) => ({
+                                    label: i.name,
+                                    value: i.itemTypeId,
+                                }))}
+                                placeholder="Chọn loại mặt hàng"
+                            />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Mã sản phẩm"
+                            name="code"
+                            rules={[{ required: true, message: "Vui lòng nhập mã sản phẩm" }]}
+                        >
+                            <Input placeholder="Nhập mã sản phẩm" />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Mô tả"
+                            name="description"
+                            rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
+                        >
+                            <Input.TextArea placeholder="Nhập mô tả sản phẩm" />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Thương hiệu"
+                            name="brand"
+                            rules={[{ required: true, message: "Vui lòng nhập thương hiệu" }]}
+                        >
+                            <Input placeholder="Nhập thương hiệu" />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Giá"
+                            name="price"
+                            rules={[
+                                { required: true, message: "Vui lòng nhập giá" },
+                                { pattern: /^\d+$/, message: "Giá phải là số" },
+                            ]}
+                        >
+                            <Input placeholder="Nhập giá (VND)" />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Tỷ lệ khuyến mại (%)"
+                            name="discount"
+                            rules={[
+                                { required: true, message: "Vui lòng nhập tỷ lệ khuyến mại" },
+                                { pattern: /^\d+$/, message: "Phải là số" },
+                            ]}
+                        >
+                            <Input placeholder="Nhập phần trăm khuyến mại" />
+                        </Form.Item>
+
+                        <Form.Item label="Ảnh sản phẩm" required>
+                            <Upload
+                                listType="picture-card"
+                                fileList={imageList}
+                                onChange={({ fileList }) => setImageList(fileList)}
+                                customRequest={customRequest}
+                                multiple
+                                accept="image/*"
+                            >
+                                {imageList.length < 5 && (
+                                    <div>
+                                        <UploadOutlined />
+                                        <div style={{ marginTop: 8 }}>Tải lên</div>
+                                    </div>
+                                )}
+                            </Upload>
+                            <div style={{ color: "#888", fontSize: 12 }}>
+                                Chọn tối đa 5 ảnh. Ảnh đầu tiên sẽ là thumbnail.
+                            </div>
+                        </Form.Item>
+                    </Form>
+
+                    {/* CỘT PHẢI: Biến thể sản phẩm */}
+                    <div style={{ flex: 1 }}>
+                        <div
+                            style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                marginBottom: 8,
+                            }}
+                        >
+                            <h4>Biến thể sản phẩm</h4>
+                            <Button
+                                style={{ backgroundColor: "#1677ff", color: "white" }}
+                                icon={<PlusOutlined />}
+                                onClick={() =>
+                                    setVariantsS((prev: any) => [
+                                        ...prev,
+                                        { color: "", size: "", quantity: 0, price: 0 },
+                                    ])
+                                }
+                            >
+                                Thêm biến thể
+                            </Button>
+                        </div>
+
+                        {variantsS.map((variant: any, index: any) => (
+                            <div
+                                key={index}
+                                style={{
+                                    display: "grid",
+                                    gridTemplateColumns: "1fr 1fr 1fr 1fr auto",
+                                    gap: 8,
+                                    marginBottom: 10,
+                                    alignItems: "center",
+                                }}
+                            >
+                                <Select
+                                    placeholder="Màu sắc"
+                                    value={variant.color || undefined}
+                                    onChange={(value) =>
+                                        updateVariant(index, { ...variant, itemColorId: value })
+                                    }
+                                    options={colors.map((c) => ({
+                                        label: c.name,
+                                        value: c.itemColorId,
+                                    }))}
+                                    showSearch
+                                    optionFilterProp="label"
+                                />
+                                <Select
+                                    placeholder="Size"
+                                    value={variant.size || undefined}
+                                    onChange={(value) =>
+                                        updateVariant(index, { ...variant, itemSizeId: value })
+                                    }
+                                    options={sizes.map((s) => ({
+                                        label: s.name,
+                                        value: s.itemSizeId,
+                                    }))}
+                                    showSearch
+                                    optionFilterProp="label"
+                                />
+
+                                <Input
+                                    placeholder="Số lượng"
+                                    type="number"
+                                    value={variant.quantity}
+                                    onChange={(e) =>
+                                        updateVariant(index, {
+                                            ...variant,
+                                            quantity: e.target.value || 0,
+                                        })
+                                    }
+                                />
+                                <Input
+                                    placeholder="Giá"
+                                    type="number"
+                                    value={variant.price}
+                                    onChange={(e) =>
+                                        updateVariant(index, {
+                                            ...variant,
+                                            price: e.target.value || 0,
+                                        })
+                                    }
+                                />
+                                <Button
+                                    danger
+                                    type="text"
+                                    onClick={() =>
+                                        setVariantsS((prev: any) =>
+                                            prev.filter((_: any, i: any) => i !== index)
+                                        )
+                                    }
+                                >
+                                    X
+                                </Button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </Modal>
+
+            {/* <Modal
+                title="Tạo sản phẩm mới"
+                open={isModalOpen}
+                onOk={handleOk}
+                onCancel={handleCancel}
+                confirmLoading={uploading}
+                okText="Tạo"
+                cancelText="Hủy"
+                width={900}
                 destroyOnHidden
             >
                 <Form
@@ -462,7 +725,7 @@ function ProductsPage() {
                         <InputNumber type="number" style={{ width: "100%" }} min={0} max={5} />
                     </Form.Item> */}
 
-                    <Form.Item
+            {/* <Form.Item
                         label="Tỷ lệ khuyến mại (%)"
                         name="discount"
                         rules={[
@@ -494,10 +757,11 @@ function ProductsPage() {
                         <div style={{ color: "#888", fontSize: 12 }}>Chọn tối đa 5 ảnh. Ảnh đầu tiên sẽ là thumbnail.</div>
                     </Form.Item>
                 </Form>
-            </Modal>
+            </Modal> */}
             {/* Modal tạo biến thể sản phẩm */}
             <Modal
-                title={`Tạo biến thể cho sản phẩm${variantProduct ? `: ${variantProduct.name}` : ""}`}
+                title={`Tạo biến thể cho sản phẩm${variantProduct ? `: ${variantProduct.name}` : ""
+                    }`}
                 open={isVariantModalOpen}
                 onOk={handleVariantOk}
                 onCancel={handleVariantCancel}
@@ -505,11 +769,26 @@ function ProductsPage() {
                 cancelText="Hủy"
                 destroyOnHidden
             >
-                <Form form={variantForm} initialValues={variantProduct ? {
-                    price: variantProduct && variantProduct.price && variantProduct.discount
-                        ? Math.round(Number(variantProduct.price) * (1 - Number(variantProduct.discount) / 100))
-                        : undefined,
-                } : {}} layout="vertical" preserve={false}>
+                <Form
+                    form={variantForm}
+                    initialValues={
+                        variantProduct
+                            ? {
+                                price:
+                                    variantProduct &&
+                                        variantProduct.price &&
+                                        variantProduct.discount
+                                        ? Math.round(
+                                            Number(variantProduct.price) *
+                                            (1 - Number(variantProduct.discount) / 100)
+                                        )
+                                        : undefined,
+                            }
+                            : {}
+                    }
+                    layout="vertical"
+                    preserve={false}
+                >
                     <Form.Item label="ID sản phẩm" name="itemId" hidden>
                         <Input />
                     </Form.Item>
@@ -520,7 +799,10 @@ function ProductsPage() {
                     >
                         <Select
                             placeholder="Chọn màu"
-                            options={colors.map(c => ({ label: c.name, value: c.itemColorId }))}
+                            options={colors.map((c) => ({
+                                label: c.name,
+                                value: c.itemColorId,
+                            }))}
                             showSearch
                             optionFilterProp="label"
                         />
@@ -532,7 +814,10 @@ function ProductsPage() {
                     >
                         <Select
                             placeholder="Chọn size"
-                            options={sizes.map(s => ({ label: s.name, value: s.itemSizeId }))}
+                            options={sizes.map((s) => ({
+                                label: s.name,
+                                value: s.itemSizeId,
+                            }))}
                             showSearch
                             optionFilterProp="label"
                         />
@@ -566,17 +851,23 @@ function ProductsPage() {
             >
                 <Form
                     form={editForm}
-                    initialValues={editingProduct ? {
-                        name: editingProduct.name,
-                        code: editingProduct.code,
-                        description: editingProduct.description,
-                        brand: editingProduct.brand,
-                        price: editingProduct.price,
-                        itemTypeId: editingProduct.itemTypeId ?? editingProduct.item_item_type_fk?.itemTypeId,
-                        discount: editingProduct.discount,
-                        numBuy: editingProduct.numBuy,
-                        averageStar: editingProduct.averageStar
-                    } : {}}
+                    initialValues={
+                        editingProduct
+                            ? {
+                                name: editingProduct.name,
+                                code: editingProduct.code,
+                                description: editingProduct.description,
+                                brand: editingProduct.brand,
+                                price: editingProduct.price,
+                                itemTypeId:
+                                    editingProduct.itemTypeId ??
+                                    editingProduct.item_item_type_fk?.itemTypeId,
+                                discount: editingProduct.discount,
+                                numBuy: editingProduct.numBuy,
+                                averageStar: editingProduct.averageStar,
+                            }
+                            : {}
+                    }
                     layout="vertical"
                     preserve={false}
                 >
@@ -585,7 +876,13 @@ function ProductsPage() {
                         name="itemTypeId"
                         rules={[{ required: true, message: "Vui lòng chọn loại sản phẩm" }]}
                     >
-                        <Select options={categories.map(i => ({ label: i.name, value: i.itemTypeId }))} placeholder="Chọn loại mặt hàng" />
+                        <Select
+                            options={categories.map((i) => ({
+                                label: i.name,
+                                value: i.itemTypeId,
+                            }))}
+                            placeholder="Chọn loại mặt hàng"
+                        />
                     </Form.Item>
                     <Form.Item
                         label="Tên sản phẩm"
@@ -606,7 +903,7 @@ function ProductsPage() {
                         name="price"
                         rules={[
                             { required: true, message: "Vui lòng nhập giá" },
-                            { pattern: /^\d+$/, message: "Giá phải là số" }
+                            { pattern: /^\d+$/, message: "Giá phải là số" },
                         ]}
                     >
                         <Input placeholder="Nhập giá (VND)" />
@@ -617,7 +914,12 @@ function ProductsPage() {
                     </Form.Item>
 
                     <Form.Item name="averageStar" label="Đánh giá">
-                        <InputNumber type="number" style={{ width: "100%" }} min={0} max={5} />
+                        <InputNumber
+                            type="number"
+                            style={{ width: "100%" }}
+                            min={0}
+                            max={5}
+                        />
                     </Form.Item>
 
                     <Form.Item
@@ -639,15 +941,12 @@ function ProductsPage() {
                         name="discount"
                         rules={[
                             { required: true, message: "Vui lòng nhập tỷ lệ khuyến mại" },
-                            { pattern: /^\d+$/, message: "Phải là số" }
+                            { pattern: /^\d+$/, message: "Phải là số" },
                         ]}
                     >
                         <Input placeholder="Nhập tỷ lệ khuyến mại" />
                     </Form.Item>
-                    <Form.Item
-                        label="Ảnh sản phẩm"
-                        required
-                    >
+                    <Form.Item label="Ảnh sản phẩm" required>
                         <Upload
                             listType="picture-card"
                             fileList={editImageList}
@@ -663,7 +962,9 @@ function ProductsPage() {
                                 </div>
                             )}
                         </Upload>
-                        <div style={{ color: "#888", fontSize: 12 }}>Chọn tối đa 5 ảnh. Ảnh đầu tiên sẽ là thumbnail.</div>
+                        <div style={{ color: "#888", fontSize: 12 }}>
+                            Chọn tối đa 5 ảnh. Ảnh đầu tiên sẽ là thumbnail.
+                        </div>
                     </Form.Item>
                 </Form>
             </Modal>
@@ -671,4 +972,4 @@ function ProductsPage() {
     );
 }
 
-export default ProductsPage
+export default ProductsPage;
