@@ -1,7 +1,7 @@
 "use client"
 import { useAtom } from "jotai";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { CART } from "@/services/service.atom";
+import { CART, ORDER } from "@/services/service.atom";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -14,7 +14,8 @@ type Props = {
 
 function ProductTool({ product, variants }: Props) {
 
-    const [cart, setCart] = useAtom(CART)
+    const [cart, setCart] = useAtom(CART);
+    const [order, setOrder] = useAtom(ORDER);
     const [selectedVariant, setSelectedVariant] = useState<VariantDocument | undefined>(undefined)
     const router = useRouter()
 
@@ -57,10 +58,22 @@ function ProductTool({ product, variants }: Props) {
 
     const orderNow = () => {
         try {
-            addToCart()
-            router.push("/dat-hang")
+            if (!selectedVariant) throw new Error("Vui lòng chọn size")
+            const temp = {
+                product: product,
+                variants: selectedVariant,
+                quantity: 1
+            }
+            // addToCart()
+            setOrder(temp);
+            console.log("loanhtm product: ", product);
+            console.log("loanhtm selectedVariant: ", product.itemId, selectedVariant);
+            debugger
+            router.push(`/dat-hang?product=${product.itemId}&&variant=${selectedVariant}`)
         } catch (err: any) { toast.error(err.message) }
     }
+
+    console.log("loanhtm selectedVariant: ", product, selectedVariant);
 
     return <div className="!sticky !bottom-0 flex py-2 items-center flex-col lg:flex-row space-x-0 space-y-4 lg:space-y-0 lg:space-x-2">
         {/* Bộ select size sử dụng shadcn */}

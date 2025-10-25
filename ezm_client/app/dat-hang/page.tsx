@@ -1,10 +1,11 @@
 "use client"
 import { toast } from "sonner"
-import { CART } from "@/services/service.atom"
+import { CART, ORDER } from "@/services/service.atom"
 import { useAtom } from "jotai"
 import { ChangeEventHandler, useState } from "react"
 import { userService } from "@/services/service.api"
 import { save } from "@/services/service.storage"
+import { useSearchParams } from "next/navigation"
 
 type OrderForm = {
     name: string,
@@ -15,7 +16,12 @@ type OrderForm = {
 
 function OrderPage() {
 
-    const [cart, setCart] = useAtom(CART)
+    const [cart, setCart] = useAtom(CART);
+    const [order, setOrder] = useAtom(ORDER);
+    const searchParams = useSearchParams();
+    const productParam = searchParams.get("product")
+    const variantParam = searchParams.get("variant")
+
     const [form, setForm] = useState<OrderForm>({
         name: "",
         phone: "",
@@ -30,9 +36,19 @@ function OrderPage() {
 
     const handleOrder = async () => {
         try {
-            const items = cart.map(item => {
-                return { variantId: item.variants.itemVariantId, quantity: item.count }
-            })
+            let items: any[] = []
+
+            if (order && productParam && variantParam) {
+                items = [{ variantId: order.variants.itemVariantId, quantity: order.quantity }]
+            } else {
+                items = cart.map(item => ({
+                    variantId: item.variants.itemVariantId,
+                    quantity: item.count,
+                }))
+            }
+            // const items = cart.map(item => {
+            //     return { variantId: item.variants.itemVariantId, quantity: item.count }
+            // })
             if (items.length == 0) {
                 toast.error("Vui lòng chọn thêm sản phẩm để đặt hàng");
                 return;
@@ -59,9 +75,15 @@ function OrderPage() {
         }
     }
 
-    const total = cart.reduce((total, item) => total + (Number(item.variants.price) * item.count), 0)
+    // const total = cart.reduce((total, item) => total + (Number(item.variants.price) * item.count), 0)
 
-    console.log("cart: ", cart)
+    const total = (order && productParam && variantParam)
+        ? Number(order.variants.price || 0) * (order.quantity || 1)
+        : cart.reduce((total, item) => total + Number(item.variants.price) * item.count, 0)
+
+    console.log("cart: ", cart);
+    console.log("order: ", order);
+    console.log("productParam && variantParam: ", productParam, variantParam);
 
     return <div className="px-4 lg:px-12">
         <div className="text-white flex items-center gap-2">
@@ -90,7 +112,7 @@ function OrderPage() {
                 <div className="flex-grow mt-6 lg:mt-0">
                     <p className="text-xl">Giỏ hàng</p>
 
-                    {cart && cart.length > 0 ? (
+                    {/* {cart && cart.length > 0 ? (
                         <div className="divide-y divide-gray-200">
                             {cart.map((item, idx) => (
                                 <div key={item.product.itemId ?? idx} className="border-b border-gray-600 py-4 flex items-center gap-4 ">
@@ -144,6 +166,132 @@ function OrderPage() {
                                             </div>
 
                                         </div>
+                                        <div>
+                                            <p className="text-ezman-red font-bold">
+                                                {Number(item.variants.price).toLocaleString()}đ
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center text-gray-500 py-8">
+                            Giỏ hàng của bạn đang trống.
+                        </div>
+                    )} */}
+
+                    {(order && productParam && variantParam) ? (
+                        <div className="border-b border-gray-600 py-4 flex items-center gap-4">
+                            <img
+                                src={order.product.thumbnail || ''}
+                                alt={order.product.name || ''}
+                                className="w-32 h-32 object-cover rounded"
+                            />
+                            <div className="w-full flex justify-between">
+                                <div>
+                                    <p className="font-semibold font-ezman text-ezman-red">
+                                        / {order.product.brand || ""} /
+                                    </p>
+                                    <p className="text-base">{order.product.name || ""}</p>
+                                    <div className="variants">
+                                        <span className="px-3 bg-ezman-red text-white">
+                                            {order.variants.item_variant_item_size_fk.name || ""},{" "}
+                                            {order.variants.item_variant_item_color_fk.name || ""}
+                                        </span>
+                                    </div>
+                                    <div className="inline-block mt-2 border border-gray-300">
+                                        <button
+                                            className="font-ezman w-8 py-1 hover:bg-gray-300 text-lg font-bold"
+                                            onClick={() => {
+                                                if (order.quantity > 1) {
+                                                    const newOrder = { ...order, quantity: order.quantity - 1 };
+                                                    setOrder(newOrder);
+                                                }
+                                            }}
+                                        >
+                                            -
+                                        </button>
+                                        <span className="px-2">{order.quantity}</span>
+                                        <button
+                                            className="font-ezman w-8 py-1 hover:bg-gray-300 text-lg font-bold"
+                                            onClick={() => {
+                                                const newOrder = { ...order, quantity: order.quantity + 1 };
+                                                setOrder(newOrder);
+                                            }}
+                                        >
+                                            +
+                                        </button>
+                                    </div>
+
+                                </div>
+
+                                <div>
+                                    <p className="text-ezman-red font-bold">
+                                        {Number(order.variants.price || 0).toLocaleString()}đ
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (cart && cart.length > 0) ? (
+                        <div className="divide-y divide-gray-200">
+                            {cart.map((item, idx) => (
+                                <div
+                                    key={item.product.itemId ?? idx}
+                                    className="border-b border-gray-600 py-4 flex items-center gap-4 "
+                                >
+                                    <img
+                                        src={item.product.thumbnail}
+                                        alt={item.product.name}
+                                        className="w-32 h-32 object-cover rounded"
+                                    />
+                                    <div className="w-full flex justify-between">
+                                        <div>
+                                            <p className="font-semibold font-ezman text-ezman-red">
+                                                / {item.product.brand} /
+                                            </p>
+                                            <p className="text-base">{item.product.name}</p>
+                                            <div className="variants">
+                                                <span className="px-3 bg-ezman-red text-white">
+                                                    {item.variants.item_variant_item_size_fk.name},{" "}
+                                                    {item.variants.item_variant_item_color_fk.name}
+                                                </span>
+                                            </div>
+                                            <div className="inline-block mt-2 border border-gray-300">
+                                                <button
+                                                    className="font-ezman w-8 py-1 hover:bg-gray-300 text-lg font-bold"
+                                                    onClick={() => {
+                                                        if (item.count > 1) {
+                                                            const newCart = cart.map((cartItem, cartIdx) =>
+                                                                cartIdx === idx
+                                                                    ? { ...cartItem, count: cartItem.count - 1 }
+                                                                    : cartItem
+                                                            );
+                                                            setCart(newCart);
+                                                            save(newCart);
+                                                        }
+                                                    }}
+                                                >
+                                                    -
+                                                </button>
+                                                <span className="px-2">{item.count}</span>
+                                                <button
+                                                    className="font-ezman w-8 py-1 hover:bg-gray-300 text-lg font-bold"
+                                                    onClick={() => {
+                                                        const newCart = cart.map((cartItem, cartIdx) =>
+                                                            cartIdx === idx
+                                                                ? { ...cartItem, count: cartItem.count + 1 }
+                                                                : cartItem
+                                                        );
+                                                        setCart(newCart);
+                                                        save(newCart);
+                                                    }}
+                                                >
+                                                    +
+                                                </button>
+                                            </div>
+                                        </div>
+
                                         <div>
                                             <p className="text-ezman-red font-bold">
                                                 {Number(item.variants.price).toLocaleString()}đ

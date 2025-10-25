@@ -18,5 +18,13 @@ export type CartItem = {
     count: number
 }
 
+type orderItem = {
+    product: ProductDocument
+    variants: VariantDocument
+    quantity: number
+};
+
+export const ORDER = atom<orderItem | null>(null);
+
 export const USER_DETAIL = atom<UserDetailDocument | null>(null)
 export const CART = atom<CartItem[]>(load())
