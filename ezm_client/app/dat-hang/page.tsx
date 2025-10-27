@@ -2,7 +2,7 @@
 import { toast } from "sonner"
 import { CART, ORDER } from "@/services/service.atom"
 import { useAtom } from "jotai"
-import { ChangeEventHandler, useState } from "react"
+import { ChangeEventHandler, useState, Suspense } from "react"
 import { userService } from "@/services/service.api"
 import { save } from "@/services/service.storage"
 import { useSearchParams } from "next/navigation"
@@ -14,8 +14,7 @@ type OrderForm = {
     address: string
 }
 
-function OrderPage() {
-
+function OrderContent() {
     const [cart, setCart] = useAtom(CART);
     const [order, setOrder] = useAtom(ORDER);
     const searchParams = useSearchParams();
@@ -327,4 +326,14 @@ function OrderPage() {
             </div>
         </div>
     </div>
-}; export default OrderPage
+}
+
+function OrderPage() {
+    return (
+        <Suspense fallback={<div className="px-4 lg:px-12 text-white">Đang tải...</div>}>
+            <OrderContent />
+        </Suspense>
+    );
+}
+
+export default OrderPage;
