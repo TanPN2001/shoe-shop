@@ -11,7 +11,8 @@ type OrderForm = {
     name: string,
     phone: string,
     email: string,
-    address: string
+    address: string,
+    voucherCode: string,
 }
 
 function OrderContent() {
@@ -25,7 +26,8 @@ function OrderContent() {
         name: "",
         phone: "",
         email: "",
-        address: ""
+        address: "",
+        voucherCode: "",
     })
 
     const changingForm: ChangeEventHandler<HTMLInputElement> = ({ target }) => {
@@ -77,8 +79,8 @@ function OrderContent() {
     // const total = cart.reduce((total, item) => total + (Number(item.variants.price) * item.count), 0)
 
     const total = (order && productParam && variantParam)
-        ? Number(order.variants.price || 0) * (order.quantity || 1)
-        : cart.reduce((total, item) => total + Number(item.variants.price) * item.count, 0)
+        ? Number(order.variants?.price || 0) * (order?.quantity || 1)
+        : cart.reduce((total, item) => total + Number(item.variants?.price) * item?.count, 0)
 
     console.log("cart: ", cart);
     console.log("order: ", order);
@@ -110,93 +112,23 @@ function OrderContent() {
 
                 <div className="flex-grow mt-6 lg:mt-0">
                     <p className="text-xl">Giỏ hàng</p>
-
-                    {/* {cart && cart.length > 0 ? (
-                        <div className="divide-y divide-gray-200">
-                            {cart.map((item, idx) => (
-                                <div key={item.product.itemId ?? idx} className="border-b border-gray-600 py-4 flex items-center gap-4 ">
-                                    <img
-                                        src={item.product.thumbnail}
-                                        alt="ádasdasdasd"
-                                        className="w-32 h-32 object-cover rounded"
-                                    />
-                                    <div className="w-full flex justify-between">
-                                        <div>
-                                            <p className="font-semibold font-ezman text-ezman-red">/ {item.product.brand} /</p>
-                                            <p className="text-base">{item.product.name}</p>
-                                            <p>Khuyến mãi: <span className="text-ezman-red">50%</span></p>
-                                            <div className="variants">
-                                                <span className="px-3 bg-ezman-red text-white">{item.variants.item_variant_item_size_fk.name}</span>
-                                            </div>
-                                            <div className="inline-block mt-2 border border-gray-300">
-                                                <button
-                                                    className="font-ezman w-8 py-1 hover:bg-gray-300 text-lg font-bold"
-                                                    onClick={() => {
-                                                        if (item.count > 1) {
-                                                            const newCart = cart.map((cartItem, cartIdx) =>
-                                                                cartIdx === idx
-                                                                    ? { ...cartItem, count: cartItem.count - 1 }
-                                                                    : cartItem
-                                                            );
-                                                            setCart(newCart)
-                                                            save(newCart)
-                                                        }
-                                                    }}
-                                                    aria-label="Giảm số lượng"
-                                                >
-                                                    -
-                                                </button>
-                                                <span className="px-2">{item.count}</span>
-                                                <button
-                                                    className="font-ezman w-8 py-1 hover:bg-gray-300 text-lg font-bold"
-                                                    onClick={() => {
-                                                        const newCart = cart.map((cartItem, cartIdx) =>
-                                                            cartIdx === idx
-                                                                ? { ...cartItem, count: cartItem.count + 1 }
-                                                                : cartItem
-                                                        );
-                                                        setCart(newCart)
-                                                        save(newCart)
-                                                    }}
-                                                    aria-label="Tăng số lượng"
-                                                >
-                                                    +
-                                                </button>
-                                            </div>
-
-                                        </div>
-                                        <div>
-                                            <p className="text-ezman-red font-bold">
-                                                {Number(item.variants.price).toLocaleString()}đ
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="text-center text-gray-500 py-8">
-                            Giỏ hàng của bạn đang trống.
-                        </div>
-                    )} */}
-
                     {(order && productParam && variantParam) ? (
                         <div className="border-b border-gray-600 py-4 flex items-center gap-4">
                             <img
-                                src={order.product.thumbnail || ''}
-                                alt={order.product.name || ''}
+                                src={order?.product?.thumbnail || ''}
+                                alt={order?.product?.name || ''}
                                 className="w-32 h-32 object-cover rounded"
                             />
                             <div className="w-full flex justify-between">
                                 <div>
                                     <p className="font-semibold font-ezman text-ezman-red">
-                                        / {order.product.brand || ""} /
+                                        / {order?.product?.brand || ""} /
                                     </p>
-                                    <p className="text-base">{order.product.name || ""}</p>
+                                    <p className="text-base">{order?.product?.name || ""}</p>
                                     <div className="variants">
                                         <span className="px-3 bg-ezman-red text-white">
-                                            {order.variants.item_variant_item_size_fk.name || ""},{" "}
-                                            {order.variants.item_variant_item_color_fk.name || ""}
+                                            {order?.variants?.item_variant_item_size_fk ? order?.variants?.item_variant_item_size_fk?.name : ""}
+                                            {order?.variants?.item_variant_item_color_fk ? `, ${order?.variants?.item_variant_item_color_fk?.name}` : ""}
                                         </span>
                                     </div>
                                     <div className="inline-block mt-2 border border-gray-300">
@@ -211,11 +143,11 @@ function OrderContent() {
                                         >
                                             -
                                         </button>
-                                        <span className="px-2">{order.quantity}</span>
+                                        <span className="px-2">{order.quantity || 0}</span>
                                         <button
                                             className="font-ezman w-8 py-1 hover:bg-gray-300 text-lg font-bold"
                                             onClick={() => {
-                                                const newOrder = { ...order, quantity: order.quantity + 1 };
+                                                const newOrder = { ...order, quantity: order?.quantity + 1 };
                                                 setOrder(newOrder);
                                             }}
                                         >
@@ -227,7 +159,7 @@ function OrderContent() {
 
                                 <div>
                                     <p className="text-ezman-red font-bold">
-                                        {Number(order.variants.price || 0).toLocaleString()}đ
+                                        {Number(order?.variants?.price || 0).toLocaleString()}đ
                                     </p>
                                 </div>
                             </div>
@@ -241,19 +173,19 @@ function OrderContent() {
                                 >
                                     <img
                                         src={item.product.thumbnail}
-                                        alt={item.product.name}
+                                        alt={item?.product?.name}
                                         className="w-32 h-32 object-cover rounded"
                                     />
                                     <div className="w-full flex justify-between">
                                         <div>
                                             <p className="font-semibold font-ezman text-ezman-red">
-                                                / {item.product.brand} /
+                                                / {item?.product?.brand || ''} /
                                             </p>
-                                            <p className="text-base">{item.product.name}</p>
+                                            <p className="text-base">{order?.product?.name || ""}</p>
                                             <div className="variants">
                                                 <span className="px-3 bg-ezman-red text-white">
-                                                    {item.variants.item_variant_item_size_fk.name},{" "}
-                                                    {item.variants.item_variant_item_color_fk.name}
+                                                    {order?.variants?.item_variant_item_size_fk ? order?.variants?.item_variant_item_size_fk?.name : ""}
+                                                    {order?.variants?.item_variant_item_color_fk ? `, ${order?.variants?.item_variant_item_color_fk?.name}` : ""}
                                                 </span>
                                             </div>
                                             <div className="inline-block mt-2 border border-gray-300">
@@ -273,7 +205,7 @@ function OrderContent() {
                                                 >
                                                     -
                                                 </button>
-                                                <span className="px-2">{item.count}</span>
+                                                <span className="px-2">{item.count || 0}</span>
                                                 <button
                                                     className="font-ezman w-8 py-1 hover:bg-gray-300 text-lg font-bold"
                                                     onClick={() => {
@@ -293,7 +225,7 @@ function OrderContent() {
 
                                         <div>
                                             <p className="text-ezman-red font-bold">
-                                                {Number(item.variants.price).toLocaleString()}đ
+                                                {Number(item?.variants?.price || 0).toLocaleString()}đ
                                             </p>
                                         </div>
                                     </div>
