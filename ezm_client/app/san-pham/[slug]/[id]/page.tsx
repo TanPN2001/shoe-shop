@@ -53,8 +53,9 @@ async function ProductPage(props: { params: any }) {
                 <div className="mt-2 flex gap-2">
 
                     {variants.map(item => <div key={"variant-size-key:" + item.itemVariantId}>
-                        <button style={{ borderColor: item.quantity == 0 ? "gray" : "red" }} className="border-l-3 cursor-pointer px-2 lg:px-5 py-3 text-sm bg-[#2e2e2e]">
-                            {item.item_variant_item_size_fk.gender}, {item.item_variant_item_color_fk.name}, {item.item_variant_item_size_fk.name} - (Còn {item.quantity} cái)
+                        <button style={{ borderColor: item?.quantity == 0 ? "gray" : "red" }} className="border-l-3 cursor-pointer px-2 lg:px-5 py-3 text-sm bg-[#2e2e2e]">
+                            {/* {item?.item_variant_item_size_fk?.gender || ''}, {item?.item_variant_item_color_fk?.name || ''}, {item?.item_variant_item_size_fk?.name || ''} - (Còn {item?.quantity || 0} cái) */}
+                            {!!item?.item_variant_item_size_fk ? item?.item_variant_item_size_fk?.gender : ''}{!!item?.item_variant_item_color_fk ? `, ${item?.item_variant_item_color_fk?.name}` : ''}{item?.item_variant_item_size_fk ? `, ${item?.item_variant_item_size_fk?.name}` : ''} - (Còn {item?.quantity || 0} cái)
                         </button>
                     </div>)}
                 </div>
