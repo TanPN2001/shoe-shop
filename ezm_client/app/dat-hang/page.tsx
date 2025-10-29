@@ -82,10 +82,6 @@ function OrderContent() {
         ? Number(order.variants?.price || 0) * (order?.quantity || 1)
         : cart.reduce((total, item) => total + Number(item.variants?.price) * item?.count, 0)
 
-    console.log("cart: ", cart);
-    console.log("order: ", order);
-    console.log("productParam && variantParam: ", productParam, variantParam);
-
     return <div className="px-4 lg:px-12">
         <div className="text-white flex items-center gap-2">
             <p className="text-lg text-ezman-red font-bold font-ezman">EZMAN</p>

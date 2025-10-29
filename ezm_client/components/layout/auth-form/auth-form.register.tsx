@@ -34,12 +34,11 @@ function AuthFormRegister({ setOpen }: Props) {
                 throw new Error("Mật khẩu không được để trống");
             }
             const { data } = await api.post("/auth/register", form)
-            console.log(data.data)
             setUserDetail(data.data.detail)
             localStorage.setItem("ezman-token", data.data.token)
             toast.success("Đăng nhập thành công", { position: "top-center" })
             setOpen(false)
-        } catch(err: any) {
+        } catch (err: any) {
             console.log(err)
             toast.error(err?.response?.data?.message ?? err.message, { position: "top-center" })
         }

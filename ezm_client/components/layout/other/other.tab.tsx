@@ -29,8 +29,6 @@ function OtherTabContent({ value, category }: Props) {
 
     const keywordsFounded = keywords.filter(item => item.category == category.itemTypeId)
 
-    console.log(keywordsFounded)
-
     return <TabsContent value={value} className="px-0 lg:px-6">
 
         <p className="text-xl lg:text-5xl font-semibold font-ezman">{category.name}</p>

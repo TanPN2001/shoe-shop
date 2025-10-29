@@ -70,8 +70,6 @@ function ProductTool({ product, variants }: Props) {
         } catch (err: any) { toast.error(err.message) }
     }
 
-    // console.log("loanhtm variants: ", variants);
-
     return <div className="!sticky !bottom-0 flex py-2 items-center flex-col lg:flex-row space-x-0 space-y-4 lg:space-y-0 lg:space-x-2">
         {/* Bộ select size sử dụng shadcn */}
         <div className="lg:w-44 w-full">

@@ -20,7 +20,6 @@ function AuthFormLogin({ setOpen }: Props) {
                 throw new Error("Mật khẩu không được để trống");
             }
             const { data } = await api.post("/auth/login", form)
-            console.log(data.data)
             setUserDetail(data.data.detail)
             localStorage.setItem("ezman-token", data.data.token)
             toast.success("Đăng ký thành công", { position: "top-center" })
