@@ -66,14 +66,11 @@ function ProductTool({ product, variants }: Props) {
             }
             // addToCart()
             setOrder(temp);
-            console.log("loanhtm product: ", product);
-            console.log("loanhtm selectedVariant: ", product.itemId, selectedVariant);
-            debugger
             router.push(`/dat-hang?product=${product.itemId}&&variant=${selectedVariant}`)
         } catch (err: any) { toast.error(err.message) }
     }
 
-    console.log("loanhtm selectedVariant: ", product, selectedVariant);
+    // console.log("loanhtm variants: ", variants);
 
     return <div className="!sticky !bottom-0 flex py-2 items-center flex-col lg:flex-row space-x-0 space-y-4 lg:space-y-0 lg:space-x-2">
         {/* Bộ select size sử dụng shadcn */}
@@ -83,8 +80,8 @@ function ProductTool({ product, variants }: Props) {
                     <SelectValue placeholder="Chọn size" />
                 </SelectTrigger>
                 <SelectContent>
-                    {variants.map(item => <SelectItem key={item.itemVariantId} disabled={item.quantity === 0} value={String(item.itemVariantId)}>
-                        {item.item_variant_item_size_fk.gender}, {item.item_variant_item_color_fk.name}, {item.item_variant_item_size_fk.name} - (Còn {item.quantity} cái)
+                    {variants.map(item => <SelectItem key={item.itemVariantId} disabled={item?.quantity === 0} value={String(item?.itemVariantId)}>
+                        {!!item?.item_variant_item_size_fk ? item?.item_variant_item_size_fk?.gender : ''}{!!item?.item_variant_item_color_fk ? `, ${item?.item_variant_item_color_fk?.name}` : ''}{item?.item_variant_item_size_fk ? `, ${item?.item_variant_item_size_fk?.name}` : ''} - (Còn {item?.quantity || 0} cái)
                     </SelectItem>)}
                 </SelectContent>
             </Select>
@@ -96,7 +93,7 @@ function ProductTool({ product, variants }: Props) {
             </button>
 
             <button onClick={orderNow} className="cursor-pointer w-full flex-grow bg-ezman-red px-6 py-1.5 text-white font-medium">
-                Mua ngay - {selectedVariant ? Number(selectedVariant.price).toLocaleString() : 0}đ
+                Mua ngay - {selectedVariant ? Number(selectedVariant?.price || 0).toLocaleString() : 0}đ
             </button>
         </div>
     </div>
