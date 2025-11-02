@@ -4,8 +4,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { CART, ORDER } from "@/services/service.atom";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { save } from "@/services/service.storage";
+import './product.tool.css';
 
 type Props = {
     product: ProductDocument
@@ -13,54 +14,115 @@ type Props = {
 }
 
 function ProductTool({ product, variants }: Props) {
-
+    console.log("loanhtm variants: ", variants);
     const [cart, setCart] = useAtom(CART);
     const [order, setOrder] = useAtom(ORDER);
     const [selectedVariant, setSelectedVariant] = useState<VariantDocument | undefined>(undefined);
     const router = useRouter();
-    const [selectedColor, setSelectedColor] = useState<string | undefined>();
-    const [selectedSize, setSelectedSize] = useState<string | undefined>();
+    const [selectedColor, setSelectedColor] = useState<any | undefined>(undefined);
+    const [selectedSize, setSelectedSize] = useState<any | undefined>(undefined);
 
-    const onSelectingVariant = (value: string) => {
-        const variantId = Number(value)
-        const foundVariant = variants.find(variant => variant.itemVariantId === variantId);
-        setSelectedVariant(foundVariant);
-    }
+    // Lấy danh sách màu & size duy nhất
+    const uniqueColors = useMemo(() => {
+        return Array.from(
+            new Map(
+                variants
+                    .filter(v => v.item_variant_item_color_fk && v.quantity > 0)
+                    .map(v => [v.item_variant_item_color_fk?.itemColorId, v.item_variant_item_color_fk])
+            ).values()
+        );
+    }, [variants]);
 
-    // Lấy danh sách màu và size duy nhất
-    const uniqueColors = Array.from(
-        new Set(variants.map(v => v.item_variant_item_color_fk?.name).filter(Boolean))
-    );
-    const uniqueSizes = Array.from(
-        new Set(variants.map(v => v.item_variant_item_size_fk?.name).filter(Boolean))
-    );
+    const uniqueSizes = useMemo(() => {
+        return Array.from(
+            new Map(
+                variants
+                    .filter(v => v.item_variant_item_size_fk && v.quantity > 0)
+                    .map(v => [v.item_variant_item_size_fk?.itemSizeId, v.item_variant_item_size_fk])
+            ).values()
+        );
+    }, [variants]);
 
-    // Khi người dùng chọn màu hoặc size
-    const handleSelectColor = (color: string) => {
-        setSelectedColor(color);
-        updateVariant(color, selectedSize);
-    };
+    const filteredSizes = useMemo(() => {
+        if (!selectedColor) return uniqueSizes;
+        const filtered = variants
+            .filter(v => v.item_variant_item_color_fk?.itemColorId === selectedColor.itemColorId)
+            .map(v => v.item_variant_item_size_fk)
+            .filter(Boolean);
+        return Array.from(new Map(filtered.map(s => [s.itemSizeId, s])).values());
+    }, [selectedColor, variants]);
 
-    const handleSelectSize = (size: string) => {
-        setSelectedSize(size);
-        updateVariant(selectedColor, size);
-    };
+    // Khi chọn size → lọc lại danh sách màu phù hợp
+    const filteredColors = useMemo(() => {
+        if (!selectedSize) return uniqueColors;
+        const filtered = variants
+            .filter(v => v.item_variant_item_size_fk?.itemSizeId === selectedSize.itemSizeId)
+            .map(v => v.item_variant_item_color_fk)
+            .filter(Boolean);
+        return Array.from(new Map(filtered.map(c => [c.itemColorId, c])).values());
+    }, [selectedSize, variants]);
 
-    // Hàm tìm variant khớp giữa color + size
-    const updateVariant = (color?: string, size?: string) => {
-        if (!color || !size) {
-            setSelectedVariant(undefined);
-            return;
+    const handleSelectColor = (colorId: string) => {
+        const colorObj = uniqueColors.find(c => c.itemColorId === Number(colorId));
+        setSelectedColor(colorObj);
+
+        // Nếu đã chọn size mà size đó không tồn tại với màu này → reset
+        if (selectedSize) {
+            const exist = variants.some(
+                v =>
+                    v.item_variant_item_color_fk?.itemColorId === colorObj?.itemColorId &&
+                    v.item_variant_item_size_fk?.itemSizeId === selectedSize.itemSizeId
+            );
+            if (!exist) setSelectedSize(undefined);
         }
 
-        const found = variants.find(
-            v =>
-                v.item_variant_item_color_fk?.name === color &&
-                v.item_variant_item_size_fk?.name === size
-        );
-        setSelectedVariant(found);
+        // Tìm variant khớp giữa color + size (nếu có)
+        if (selectedSize && colorObj) {
+            const found = variants.find(
+                v =>
+                    v.item_variant_item_color_fk?.itemColorId === colorObj.itemColorId &&
+                    v.item_variant_item_size_fk?.itemSizeId === selectedSize.itemSizeId
+            );
+            setSelectedVariant(found);
+        } else {
+            // Nếu chưa chọn đủ thì reset variant
+            setSelectedVariant(undefined);
+        }
     };
 
+    const handleSelectSize = (sizeId: string) => {
+        const sizeObj = uniqueSizes.find(s => s.itemSizeId === Number(sizeId));
+        setSelectedSize(sizeObj);
+
+        // Nếu đã chọn màu mà màu đó không tồn tại với size này → reset
+        if (selectedColor) {
+            const exist = variants.some(
+                v =>
+                    v.item_variant_item_color_fk?.itemColorId === selectedColor.itemColorId &&
+                    v.item_variant_item_size_fk?.itemSizeId === sizeObj?.itemSizeId
+            );
+            if (!exist) setSelectedColor(undefined);
+        }
+
+        // Tìm variant khớp giữa color + size (nếu có)
+        if (selectedColor && sizeObj) {
+            const found = variants.find(
+                v =>
+                    v.item_variant_item_color_fk?.itemColorId === selectedColor.itemColorId &&
+                    v.item_variant_item_size_fk?.itemSizeId === sizeObj.itemSizeId
+            );
+            setSelectedVariant(found);
+        } else {
+            // Nếu chưa chọn đủ thì reset variant
+            setSelectedVariant(undefined);
+        }
+    };
+
+    useEffect(() => {
+        console.log("loanhtm Selected Color:", selectedColor);
+        console.log("loanhtm Selected Size:", selectedSize);
+        console.log("loanhtm Selected Variant:", selectedVariant);
+    }, [selectedColor, selectedSize, selectedVariant]);
 
     const addToCart = () => {
         // Tìm xem sản phẩm đã có trong giỏ chưa (dựa vào id)
@@ -95,7 +157,8 @@ function ProductTool({ product, variants }: Props) {
 
     const orderNow = () => {
         try {
-            if (!selectedVariant) throw new Error("Vui lòng chọn size")
+            if (!selectedVariant) throw new Error("Vui lòng chọn size");
+            if (!selectedColor) throw new Error("Vui lòng chọn màu")
             const temp = {
                 product: product,
                 variants: selectedVariant,
@@ -103,57 +166,50 @@ function ProductTool({ product, variants }: Props) {
             }
             // addToCart()
             setOrder(temp);
-            router.push(`/dat-hang?product=${product.itemId}&&variant=${selectedVariant}`)
+            router.push(`/dat-hang?product=${product.itemId}&&variant=${selectedVariant.itemId}`)
         } catch (err: any) { toast.error(err.message) }
     }
 
     return <div className="!sticky !bottom-0 flex py-2 items-center flex-col lg:flex-row space-x-0 space-y-4 lg:space-y-0 lg:space-x-2">
         {/* Bộ select size sử dụng shadcn */}
-        {/* <div className="lg:w-44 w-full">
-            <Select onValueChange={onSelectingVariant}>
-                <SelectTrigger className="w-full bg-white rounded-none">
-                    <SelectValue placeholder="Chọn size" />
-                </SelectTrigger>
-                <SelectContent>
-                    {variants.map(item => <SelectItem key={item.itemVariantId} disabled={item?.quantity === 0} value={String(item?.itemVariantId)}>
-                        {!!item?.item_variant_item_size_fk ? item?.item_variant_item_size_fk?.gender : ''}{!!item?.item_variant_item_color_fk ? `, ${item?.item_variant_item_color_fk?.name}` : ''}{item?.item_variant_item_size_fk ? `, ${item?.item_variant_item_size_fk?.name}` : ''} - (Còn {item?.quantity || 0} cái)
-                    </SelectItem>)}
-                </SelectContent>
-            </Select>
-        </div> */}
-
-        {/* Select Màu sắc */}
-        <div className="lg:w-44 w-full">
-            <Select onValueChange={handleSelectColor}>
-                <SelectTrigger className="w-full bg-white rounded-none">
-                    <SelectValue placeholder="Chọn màu sắc" />
-                </SelectTrigger>
-                <SelectContent>
-                    {uniqueColors.map((color) => (
-                        <SelectItem key={color} value={color}>
-                            {color}
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
-        </div>
 
         {/* Select Size */}
         <div className="lg:w-44 w-full">
-            <Select onValueChange={handleSelectSize}>
+            <Select
+                value={selectedSize ? String(selectedSize.itemSizeId) : ''}
+                onValueChange={handleSelectSize}
+            >
                 <SelectTrigger className="w-full bg-white rounded-none">
-                    <SelectValue placeholder="Chọn size" />
+                    <SelectValue placeholder="Chọn size" className="text-black" />
                 </SelectTrigger>
                 <SelectContent>
-                    {uniqueSizes.map((size) => (
-                        <SelectItem key={size} value={size}>
-                            {size}
+                    {filteredSizes.map(size => (
+                        <SelectItem key={size.itemSizeId} value={String(size.itemSizeId)}>
+                            {size.name} - {size.gender}
                         </SelectItem>
                     ))}
                 </SelectContent>
             </Select>
         </div>
 
+        {/* Select Màu */}
+        <div className="lg:w-44 w-full">
+            <Select
+                value={selectedColor ? String(selectedColor.itemColorId) : ""}
+                onValueChange={handleSelectColor}
+            >
+                <SelectTrigger className="w-full bg-white rounded-none">
+                    <SelectValue placeholder="Chọn màu" className="text-black" />
+                </SelectTrigger>
+                <SelectContent>
+                    {filteredColors.map(color => (
+                        <SelectItem key={color.itemColorId} value={String(color.itemColorId)}>
+                            {color?.name || ''}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+        </div>
 
         <div className="lg:space-x-2 flex flex-col lg:flex-row w-full">
             <button onClick={handleAddToCart} className="cursor-pointer w-full bg-white px-6 py-1.5 text-black font-medium">
