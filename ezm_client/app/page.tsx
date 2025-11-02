@@ -15,7 +15,7 @@ export default async function Home() {
   const loader = async () => {
     try {
       const { data: res } = await server.get("/item-type/get")
-      return { categories: (res.data as any[]).sort((a, b) => a.itemTypeId || 0 - b.itemTypeId || 0) }
+      return { categories: (res.data as any[]).sort((a, b) => a?.itemTypeId || 0 - b?.itemTypeId || 0) }
     } catch (err) {
       return { categories: [] }
     }

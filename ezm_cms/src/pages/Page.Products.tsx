@@ -176,9 +176,21 @@ function ProductsPage() {
             key: "listSizeVariants",
             render: (listSizeVariants: any[]) => {
                 if (!listSizeVariants?.length) return "—";
-                return listSizeVariants
-                    .map((v) => `${v.name}: ${v.quantity}`)
-                    .join(", ");
+                return (
+                    <div
+                        style={{
+                            whiteSpace: "pre",
+                            // overflowX: "auto",
+                            maxWidth: 150,
+                        }}
+                    >
+                        {
+                            listSizeVariants
+                                .map((v) => `${v.name}: ${v.quantity}`)
+                                .join(",\n")
+                        }
+                    </div>
+                );
             },
         },
         {
@@ -233,6 +245,7 @@ function ProductsPage() {
         setIsModalOpen(false);
         form.resetFields();
         setImageList([]);
+        setVariantsS([]);
     };
 
     // Handle form submit (create)
@@ -254,21 +267,27 @@ function ProductsPage() {
                 return;
             }
 
-            console.log(">>> ", values, images);
-
-            await api.post("/item/create-variation", {
+            const res = await api.post("/item/create-variation", {
+                // await api.post("/item/create-variation", {
                 ...values,
                 thumbnail: images[0],
                 images: images,
                 variants: variantsS,
             });
-
-            message.success("Tạo sản phẩm thành công!");
-            setIsModalOpen(false);
-            form.resetFields();
-            setImageList([]);
+            if (res.data.status == 0) {
+                message.success("Tạo sản phẩm thành công!");
+                setIsModalOpen(false);
+                // message.success("Tạo sản phẩm thành công!");
+                form.resetFields();
+                setImageList([]);
+                loadItems();
+            } else {
+                setIsModalOpen(false);
+                message.error("Tạo sản phẩm thất bại!");
+            }
         } catch (err) {
             // Validation error
+            message.error("Lỗi tạo sản phẩm!");
         } finally {
             setUploading(false);
         }
@@ -301,7 +320,7 @@ function ProductsPage() {
             itemId: product.itemId,
             itemColorId: undefined,
             itemSizeId: undefined,
-            quantity: 1,
+            quantity: undefined,
             price: undefined,
         });
     };
@@ -323,13 +342,19 @@ function ProductsPage() {
                 price: Number(values.price),
             };
 
-            await api.post("/item-variant/create", payload);
-            message.success("Tạo biến thể thành công!");
-            setIsVariantModalOpen(false);
-            setVariantProduct(null);
-            variantForm.resetFields();
+            const res = await api.post("/item-variant/create", payload);
+            if (res.data.status == 0) {
+                message.success("Tạo biến thể thành công!");
+                setIsVariantModalOpen(false);
+                setVariantProduct(null);
+                variantForm.resetFields();
+                loadItems();
+            } else {
+                message.error("Tạo biến thể thất bại!");
+            }
         } catch (err) {
             // validation error or api error
+            message.error("Lỗi tạo biến thể!");
         }
     };
 
@@ -430,6 +455,7 @@ function ProductsPage() {
             <Table
                 columns={columns}
                 dataSource={listProduct.data}
+            // scroll={{ x: true }}
             // pagination={{
             //     current: listProduct.paging.pageIndex,
             //     pageSize: listProduct.paging.pageSize,
@@ -568,7 +594,7 @@ function ProductsPage() {
                                 onClick={() =>
                                     setVariantsS((prev: any) => [
                                         ...prev,
-                                        { color: "", size: "", quantity: 0, price: 0 },
+                                        { color: "", size: "", quantity: undefined, price: undefined },
                                     ])
                                 }
                             >
@@ -617,25 +643,27 @@ function ProductsPage() {
                                 <Input
                                     placeholder="Số lượng"
                                     type="number"
-                                    value={variant.quantity}
+                                    value={variant.quantity ?? ""}
                                     onChange={(e) =>
                                         updateVariant(index, {
                                             ...variant,
-                                            quantity: e.target.value || 0,
+                                            quantity: e.target.value ? Number(e.target.value) : undefined,
                                         })
                                     }
                                 />
+
                                 <Input
                                     placeholder="Giá"
                                     type="number"
-                                    value={variant.price}
+                                    value={variant.price ?? ""}
                                     onChange={(e) =>
                                         updateVariant(index, {
                                             ...variant,
-                                            price: e.target.value || 0,
+                                            price: e.target.value ? Number(e.target.value) : undefined,
                                         })
                                     }
                                 />
+
                                 <Button
                                     danger
                                     type="text"

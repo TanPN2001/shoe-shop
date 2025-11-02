@@ -1,0 +1,14 @@
+.tag_sold-out {
+    color: red;
+    border: 1px solid #ffffff;
+    background-color: #ffffff;
+    padding: 3px 10px;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+    .tag_sold-out {
+        font-size: 12px;
+    }
+}

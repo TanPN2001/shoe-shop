@@ -49,7 +49,7 @@ function OtherContainer() {
                     <div className="w-[280px] mt-4">
                         <TabsList className="h-full flex flex-row lg:flex-col !p-0">
                             {
-                                categories.map((item, idx) => <TabsTrigger key={":tablist-item:" + item.itemTypeId} style={{ textAlign: "start" }}
+                                categories.map((item, idx) => <TabsTrigger key={":tablist-item:" + item?.itemTypeId} style={{ textAlign: "start" }}
                                     value={String(idx)}
                                     className="w-full cursor-pointer tab-triggle-vertical !pr-5 lg:!pr-0">
                                     {item.name}
@@ -64,7 +64,7 @@ function OtherContainer() {
                         {categories.map((item, idx) => <OtherTabContent
                             value={String(idx)}
                             category={item}
-                            key={":tablist-content:" + item.itemTypeId} />)}
+                            key={":tablist-content:" + item?.itemTypeId} />)}
                     </div>
                 </Tabs>
             </div>
