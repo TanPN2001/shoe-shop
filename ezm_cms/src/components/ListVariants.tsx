@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ProductDocument } from "../types/Product";
 import { Button, Modal, Popconfirm, Table, Tag } from "antd";
 import api from "../api";
@@ -35,7 +35,7 @@ function ListVariant({ item }: Props) {
             title: "Sản phẩm",
             key: "name",
             render: (_, rec) => <div>
-                {rec.item_variant_item_fk.name}
+                {rec?.item_variant_item_fk?.name || ''}
             </div>
         },
         {
@@ -47,15 +47,15 @@ function ListVariant({ item }: Props) {
             title: "Size",
             key: "size",
             render: (_, rec) => <div style={{ display: "flex", gap: 8 }}>
-                <Tag>{rec.item_variant_item_size_fk.name}</Tag>
-                <span>{rec.item_variant_item_size_fk.gender}</span>
+                <Tag>{rec?.item_variant_item_size_fk?.name || ''}</Tag>
+                <span>{rec?.item_variant_item_size_fk?.gender || ''}</span>
             </div>
         },
         {
             title: "Màu sắc",
             key: "color",
             render: (_, rec) => <div>
-                <span>{rec.item_variant_item_color_fk.name}</span>
+                <span>{rec?.item_variant_item_color_fk?.name || ''}</span>
             </div>
         },
         {
@@ -73,6 +73,10 @@ function ListVariant({ item }: Props) {
             </div>
         }
     ]
+
+    useEffect(() => {
+        if (!open) load();
+    }, [open]);
 
     return <div>
 

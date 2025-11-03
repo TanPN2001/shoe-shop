@@ -27,17 +27,17 @@ const LowLevelKeywords = (props: Keyword) => {
 
 function OtherTabContent({ value, category }: Props) {
 
-    const keywordsFounded = keywords.filter(item => item.category == category.itemTypeId)
+    const keywordsFounded = keywords.filter(item => item?.category == category?.itemTypeId)
 
     return <TabsContent value={value} className="px-0 lg:px-6">
 
-        <p className="text-xl lg:text-5xl font-semibold font-ezman">{category.name}</p>
+        <p className="text-xl lg:text-5xl font-semibold font-ezman">{category?.name}</p>
 
         <div className="mt-4 lg:mt-8 grid grid-cols-3 lg:grid-cols-6 gap-x-5 lg:gap-x-20 gap-y-2 lg:gap-y-4">
             {keywordsFounded.map(keyword => (
                 <div key={keyword.id} className="">
                     <DrawerClose asChild>
-                        <Link href={`/tim-kiem?query=${keyword.tag}`} className="cursor-pointer text-sm lg:text-base font-semibold">{keyword.name}</Link>
+                        <Link href={`/tim-kiem?query=${keyword?.tag}`} className="cursor-pointer text-sm lg:text-base font-semibold">{keyword?.name || ''}</Link>
                     </DrawerClose>
                     <LowLevelKeywords {...keyword} />
                 </div>

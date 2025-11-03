@@ -5,6 +5,7 @@ import ProductTool from "@/components/product/product.tool"
 import Rating from "@/components/ui/rating"
 import { genRandomNumberInRange } from "@/lib/utils"
 import { server } from "@/services/service.api"
+import './style.css';
 
 async function ProductPage(props: { params: any }) {
     const { slug, id } = await props.params
@@ -20,6 +21,8 @@ async function ProductPage(props: { params: any }) {
     }
 
     const { detail, variants } = await loader(id, slug)
+
+    console.log("getItemDetail: ", variants);
 
     return <div className="px-4 lg:px-12">
         <div className="text-white flex items-center gap-2 mb-6">
@@ -50,14 +53,35 @@ async function ProductPage(props: { params: any }) {
                     </div>
                 </div>
                 <p className="mt-2 text-3xl font-semibold">{detail.name}</p>
-                <div className="mt-2 flex gap-2">
+                <div className="mt-2 flex flex-wrap gap-2">
+                    {variants.map(item => {
+                        const gender = item?.item_variant_item_size_fk?.gender ?? "";
+                        const color = item?.item_variant_item_color_fk?.name ?? "";
+                        const size = item?.item_variant_item_size_fk?.name ?? "";
+                        const soldOut = item.quantity === 0;
 
-                    {variants.map(item => <div key={"variant-size-key:" + item.itemVariantId}>
-                        <button style={{ borderColor: item?.quantity == 0 ? "gray" : "red" }} className="border-l-3 cursor-pointer px-2 lg:px-5 py-3 text-sm bg-[#2e2e2e]">
-                            {/* {item?.item_variant_item_size_fk?.gender || ''}, {item?.item_variant_item_color_fk?.name || ''}, {item?.item_variant_item_size_fk?.name || ''} - (Còn {item?.quantity || 0} cái) */}
-                            {!!item?.item_variant_item_size_fk ? item?.item_variant_item_size_fk?.gender : ''}{!!item?.item_variant_item_color_fk ? `, ${item?.item_variant_item_color_fk?.name}` : ''}{item?.item_variant_item_size_fk ? `, ${item?.item_variant_item_size_fk?.name}` : ''} - (Còn {item?.quantity || 0} cái)
-                        </button>
-                    </div>)}
+                        return (
+                            <button
+                                key={`variant-size-key:${item.itemVariantId}`}
+                                className={`
+                                    flex flex-col items-center justify-center 
+                                    px-3 py-2 lg:px-5 lg:py-3 text-sm
+                                    bg-[#2e2e2e] transition-all duration-200
+                                    border-l-3
+                                    ${soldOut ? "border-gray-500 cursor-not-allowed" : "border-red-500 cursor-pointer"}
+                                `}
+                            >
+                                <p className="whitespace-nowrap text-center">
+                                    {[gender, color, size].filter(Boolean).join(", ")}
+                                </p>
+                                {soldOut ? (
+                                    <span className="tag_sold-out mt-1 whitespace-nowrap">Hết hàng</span>
+                                ) : (
+                                    <span className="mt-1 whitespace-nowrap">(Còn {item.quantity} cái)</span>
+                                )}
+                            </button>
+                        );
+                    })}
                 </div>
 
             </div>
@@ -99,4 +123,5 @@ async function ProductPage(props: { params: any }) {
         </div>
     </div>
 
-}; export default ProductPage
+};
+export default ProductPage

@@ -1,11 +1,18 @@
 import { useEffect, useState } from "react"
 import api from "../api"
-import { Button, message, Table, type TableProps } from "antd";
+import { Button, message, Select, Table, type TableProps } from "antd";
 import type { OrderDocument } from "../types/Order";
 
 function OrdersPage() {
     const [buzz, context] = message.useMessage()
     const [orders, setOrders] = useState<OrderDocument[]>([]);
+
+    const statusOrder = [
+        { id: 0, name: "Đặt đơn" },
+        { id: 1, name: "Xác nhận đơn" },
+        { id: 2, name: "Hủy đơn" },
+        { id: 3, name: "Hoàn thành" }
+    ];
 
     const load = () => {
         api.get("/order/get-with-products")
@@ -16,19 +23,29 @@ function OrdersPage() {
 
     const $confirmOrder = async (order: OrderDocument) => {
         try {
-            await api.post("/order/confirm", { orderCode: order.orderCode })
+            await api.post("/order/confirm", { orderCode: order.orderCode, status: 1 })
             buzz.success("Đã duyệt đơn này!")
             load()
-        } catch { buzz.error("lỗi xảy ra") }
+        } catch { buzz.error("Có lỗi xảy ra, hãy thử lại sau ít phút") }
     }
 
-    const $cancelOrder = async (order: OrderDocument) => {
+    // const $cancelOrder = async (order: OrderDocument) => {
+    //     try {
+    //         await api.post("/order/cancel", { orderCode: order.orderCode })
+    //         buzz.success("Đã hủy đơn này!")
+    //         load()
+    //     } catch { buzz.error("Có lỗi xảy ra, hãy thử lại sau ít phút") }
+    // }
+
+    const $changeStatus = async (orderCode: string, status: number) => {
         try {
-            await api.post("/order/cancel", { orderCode: order.orderCode })
-            buzz.success("Đã hủy đơn này!")
-            load()
-        } catch { buzz.error("lỗi xảy ra") }
-    }
+            await api.post("/order/confirm", { orderCode, status });
+            buzz.success("Đã cập nhật trạng thái đơn hàng!");
+            load();
+        } catch {
+            buzz.error("Không thể cập nhật trạng thái, thử lại sau!");
+        }
+    };
 
     const columns: TableProps<OrderDocument>['columns'] = [
         {
@@ -91,14 +108,16 @@ function OrdersPage() {
             dataIndex: "status",
             key: "status",
             render: (status: number) => {
-                switch (status) {
-                    case 0: return "Đã hủy";
-                    case 1: return "Đã đặt";
-                    case 2: return "Đã xác nhận";
-                    case 3: return "Hoàn thành";
-                    case 4: return "Đã hủy";
-                    default: return "Không xác định";
-                }
+                // switch (status) {
+                //     case 0: return "Đã hủy";
+                //     case 1: return "Đã đặt";
+                //     case 2: return "Đã xác nhận";
+                //     case 3: return "Hoàn thành";
+                //     case 4: return "Đã hủy";
+                //     default: return "Không xác định";
+                // }
+                const found = statusOrder.find((s) => s.id === status);
+                return found ? found.name : "Không xác định";
             }
         },
         {
@@ -114,11 +133,27 @@ function OrdersPage() {
             render: (date: string) => new Date(date).toLocaleString(),
         },
         {
+            title: "Chuyển trạng thái",
+            key: "changeStatus",
+            render: (_, rec) => (
+                <Select
+                    value={rec.status}
+                    style={{ width: 150 }}
+                    onChange={(value) => $changeStatus(rec.orderCode, value)}
+                    options={statusOrder.map((s) => ({
+                        label: s.name,
+                        value: s.id,
+                    }))}
+                />
+            ),
+        },
+        {
             title: "Actions",
             key: "actions",
             render: (_, rec) => <div style={{ display: "flex", gap: 4 }}>
                 <Button onClick={() => $confirmOrder(rec)} size="small">Duyệt đơn</Button>
-                <Button onClick={() => $cancelOrder(rec)} size="small" danger>Hủy đơn</Button>
+                {/* <Button onClick={() => $cancelOrder(rec)} size="small" danger>Hủy đơn</Button> */}
+                <Button onClick={() => $changeStatus(rec.orderCode, 2)} size="small" danger>Hủy đơn</Button>
             </div>
         }
     ];

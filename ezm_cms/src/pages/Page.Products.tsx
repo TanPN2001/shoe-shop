@@ -176,9 +176,21 @@ function ProductsPage() {
             key: "listSizeVariants",
             render: (listSizeVariants: any[]) => {
                 if (!listSizeVariants?.length) return "—";
-                return listSizeVariants
-                    .map((v) => `${v.name}: ${v.quantity}`)
-                    .join(", ");
+                return (
+                    <div
+                        style={{
+                            whiteSpace: "pre",
+                            // overflowX: "auto",
+                            maxWidth: 150,
+                        }}
+                    >
+                        {
+                            listSizeVariants
+                                .map((v) => `${v.name}: ${v.quantity}`)
+                                .join(",\n")
+                        }
+                    </div>
+                );
             },
         },
         {
@@ -233,6 +245,7 @@ function ProductsPage() {
         setIsModalOpen(false);
         form.resetFields();
         setImageList([]);
+        setVariantsS([]);
     };
 
     // Handle form submit (create)
@@ -254,21 +267,27 @@ function ProductsPage() {
                 return;
             }
 
-            console.log(">>> ", values, images);
-
-            await api.post("/item/create-variation", {
+            const res = await api.post("/item/create-variation", {
+                // await api.post("/item/create-variation", {
                 ...values,
                 thumbnail: images[0],
                 images: images,
                 variants: variantsS,
             });
-
-            message.success("Tạo sản phẩm thành công!");
-            setIsModalOpen(false);
-            form.resetFields();
-            setImageList([]);
+            if (res.data.status == 0) {
+                message.success("Tạo sản phẩm thành công!");
+                setIsModalOpen(false);
+                // message.success("Tạo sản phẩm thành công!");
+                form.resetFields();
+                setImageList([]);
+                loadItems();
+            } else {
+                // setIsModalOpen(false);
+                message.error("Tạo sản phẩm thất bại!");
+            }
         } catch (err) {
             // Validation error
+            message.error("Lỗi tạo sản phẩm!");
         } finally {
             setUploading(false);
         }
@@ -297,13 +316,13 @@ function ProductsPage() {
         setVariantProduct(product);
         console.log(product);
         setIsVariantModalOpen(true);
-        variantForm.setFieldsValue({
-            itemId: product.itemId,
-            itemColorId: undefined,
-            itemSizeId: undefined,
-            quantity: 1,
-            price: undefined,
-        });
+        // variantForm.setFieldsValue({
+        //     itemId: product.itemId,
+        //     itemColorId: undefined,
+        //     itemSizeId: undefined,
+        //     quantity: undefined,
+        //     price: undefined,
+        // });
     };
 
     const handleVariantCancel = () => {
@@ -315,6 +334,7 @@ function ProductsPage() {
     const handleVariantOk = async () => {
         try {
             const values = await variantForm.validateFields();
+            console.log("loanhtm values: ", values);
             const payload = {
                 itemId: Number(values.itemId),
                 itemColorId: Number(values.itemColorId),
@@ -323,13 +343,19 @@ function ProductsPage() {
                 price: Number(values.price),
             };
 
-            await api.post("/item-variant/create", payload);
-            message.success("Tạo biến thể thành công!");
-            setIsVariantModalOpen(false);
-            setVariantProduct(null);
-            variantForm.resetFields();
+            const res = await api.post("/item-variant/create", payload);
+            if (res.data.status == 0) {
+                message.success("Tạo biến thể thành công!");
+                setIsVariantModalOpen(false);
+                setVariantProduct(null);
+                variantForm.resetFields();
+                loadItems();
+            } else {
+                message.error("Tạo biến thể thất bại!");
+            }
         } catch (err) {
             // validation error or api error
+            message.error("Lỗi tạo biến thể!");
         }
     };
 
@@ -430,6 +456,7 @@ function ProductsPage() {
             <Table
                 columns={columns}
                 dataSource={listProduct.data}
+            // scroll={{ x: true }}
             // pagination={{
             //     current: listProduct.paging.pageIndex,
             //     pageSize: listProduct.paging.pageSize,
@@ -568,7 +595,7 @@ function ProductsPage() {
                                 onClick={() =>
                                     setVariantsS((prev: any) => [
                                         ...prev,
-                                        { color: "", size: "", quantity: 0, price: 0 },
+                                        { color: "", size: "", quantity: undefined, price: undefined },
                                     ])
                                 }
                             >
@@ -576,7 +603,7 @@ function ProductsPage() {
                             </Button>
                         </div>
 
-                        {variantsS.map((variant: any, index: any) => (
+                        {/* {variantsS.map((variant: any, index: any) => (
                             <div
                                 key={index}
                                 style={{
@@ -587,19 +614,6 @@ function ProductsPage() {
                                     alignItems: "center",
                                 }}
                             >
-                                <Select
-                                    placeholder="Màu sắc"
-                                    value={variant.color || undefined}
-                                    onChange={(value) =>
-                                        updateVariant(index, { ...variant, itemColorId: value })
-                                    }
-                                    options={colors.map((c) => ({
-                                        label: c.name,
-                                        value: c.itemColorId,
-                                    }))}
-                                    showSearch
-                                    optionFilterProp="label"
-                                />
                                 <Select
                                     placeholder="Size"
                                     value={variant.size || undefined}
@@ -613,29 +627,43 @@ function ProductsPage() {
                                     showSearch
                                     optionFilterProp="label"
                                 />
-
+                                <Select
+                                    placeholder="Màu sắc"
+                                    value={variant.color || undefined}
+                                    onChange={(value) =>
+                                        updateVariant(index, { ...variant, itemColorId: value })
+                                    }
+                                    options={colors.map((c) => ({
+                                        label: c.name,
+                                        value: c.itemColorId,
+                                    }))}
+                                    showSearch
+                                    optionFilterProp="label"
+                                />
                                 <Input
                                     placeholder="Số lượng"
                                     type="number"
-                                    value={variant.quantity}
+                                    value={variant.quantity ?? ""}
                                     onChange={(e) =>
                                         updateVariant(index, {
                                             ...variant,
-                                            quantity: e.target.value || 0,
+                                            quantity: e.target.value ? Number(e.target.value) : undefined,
                                         })
                                     }
                                 />
+
                                 <Input
                                     placeholder="Giá"
                                     type="number"
-                                    value={variant.price}
+                                    value={variant.price ?? ""}
                                     onChange={(e) =>
                                         updateVariant(index, {
                                             ...variant,
-                                            price: e.target.value || 0,
+                                            price: e.target.value ? Number(e.target.value) : undefined,
                                         })
                                     }
                                 />
+
                                 <Button
                                     danger
                                     type="text"
@@ -648,116 +676,161 @@ function ProductsPage() {
                                     X
                                 </Button>
                             </div>
-                        ))}
+                        ))} */}
+                        {variantsS.map((variant: any, index: any) => {
+                            // Kiểm tra lỗi
+                            const errors = {
+                                size: !variant.itemSizeId ? "Bắt buộc" : "",
+                                color: !variant.itemColorId ? "Bắt buộc" : "",
+                                quantity:
+                                    variant.quantity === undefined || variant.quantity === ""
+                                        ? "Bắt buộc"
+                                        : variant.quantity < 0
+                                            ? "Số lượng >= 0"
+                                            : "",
+                                price:
+                                    variant.price === undefined || variant.price === ""
+                                        ? "Bắt buộc"
+                                        : variant.price < 0
+                                            ? "Giá >= 0"
+                                            : "",
+                            };
+
+                            const hasError = (field: keyof typeof errors) => Boolean(errors[field]);
+
+                            return (
+                                <div
+                                    key={index}
+                                    style={{
+                                        display: "grid",
+                                        gridTemplateColumns: "1fr 1fr 1fr 1fr auto",
+                                        gap: 8,
+                                        marginBottom: 10,
+                                        alignItems: "flex-start",
+                                    }}
+                                >
+                                    {/* Size */}
+                                    <div>
+                                        <Select
+                                            placeholder="Size"
+                                            value={variant.itemSizeId || undefined}
+                                            onChange={(value) =>
+                                                updateVariant(index, { ...variant, itemSizeId: value })
+                                            }
+                                            options={sizes.map((s) => ({
+                                                label: s.name,
+                                                value: s.itemSizeId,
+                                            }))}
+                                            showSearch
+                                            optionFilterProp="label"
+                                            style={{
+                                                borderColor: hasError("size") ? "red" : undefined,
+                                                width: "100%",
+                                            }}
+                                        />
+                                        {hasError("size") && (
+                                            <div style={{ color: "red", fontSize: 12, marginTop: 2 }}>
+                                                {errors.size}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Màu sắc */}
+                                    <div>
+                                        <Select
+                                            placeholder="Màu sắc"
+                                            value={variant.itemColorId || undefined}
+                                            onChange={(value) =>
+                                                updateVariant(index, { ...variant, itemColorId: value })
+                                            }
+                                            options={colors.map((c) => ({
+                                                label: c.name,
+                                                value: c.itemColorId,
+                                            }))}
+                                            showSearch
+                                            optionFilterProp="label"
+                                            style={{
+                                                borderColor: hasError("color") ? "red" : undefined,
+                                                width: "100%",
+                                            }}
+                                        />
+                                        {hasError("color") && (
+                                            <div style={{ color: "red", fontSize: 12, marginTop: 2 }}>
+                                                {errors.color}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Số lượng */}
+                                    <div>
+                                        <Input
+                                            placeholder="Số lượng"
+                                            type="number"
+                                            value={variant.quantity ?? ""}
+                                            onChange={(e) =>
+                                                updateVariant(index, {
+                                                    ...variant,
+                                                    quantity: e.target.value
+                                                        ? Number(e.target.value)
+                                                        : undefined,
+                                                })
+                                            }
+                                            style={{
+                                                borderColor: hasError("quantity") ? "red" : undefined,
+                                            }}
+                                        />
+                                        {hasError("quantity") && (
+                                            <div style={{ color: "red", fontSize: 12, marginTop: 2 }}>
+                                                {errors.quantity}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Giá */}
+                                    <div>
+                                        <Input
+                                            placeholder="Giá"
+                                            type="number"
+                                            value={variant.price ?? ""}
+                                            onChange={(e) =>
+                                                updateVariant(index, {
+                                                    ...variant,
+                                                    price: e.target.value
+                                                        ? Number(e.target.value)
+                                                        : undefined,
+                                                })
+                                            }
+                                            style={{
+                                                borderColor: hasError("price") ? "red" : undefined,
+                                            }}
+                                        />
+                                        {hasError("price") && (
+                                            <div style={{ color: "red", fontSize: 12, marginTop: 2 }}>
+                                                {errors.price}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Nút xoá */}
+                                    <Button
+                                        danger
+                                        type="text"
+                                        onClick={() =>
+                                            setVariantsS((prev: any) =>
+                                                prev.filter((_: any, i: any) => i !== index)
+                                            )
+                                        }
+                                    >
+                                        X
+                                    </Button>
+                                </div>
+                            );
+                        })}
+
                     </div>
                 </div>
             </Modal>
 
-            {/* <Modal
-                title="Tạo sản phẩm mới"
-                open={isModalOpen}
-                onOk={handleOk}
-                onCancel={handleCancel}
-                confirmLoading={uploading}
-                okText="Tạo"
-                cancelText="Hủy"
-                width={900}
-                destroyOnHidden
-            >
-                <Form
-                    form={form}
-                    layout="vertical"
-                    preserve={false}
-                >
-                    <Form.Item
-                        label="Tên sản phẩm"
-                        name="name"
-                        rules={[{ required: true, message: "Vui lòng nhập tên sản phẩm" }]}
-                    >
-                        <Input placeholder="Nhập tên sản phẩm" />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="Loại sản phẩm"
-                        name="itemTypeId"
-                        rules={[{ required: true, message: "Vui lòng nhập tên sản phẩm" }]}
-                    >
-                        <Select options={categories.map(i => ({ label: i.name, value: i.itemTypeId }))} placeholder="Chọn loại mặt hàng" />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="Mã sản phẩm"
-                        name="code"
-                        rules={[{ required: true, message: "Vui lòng nhập mã sản phẩm" }]}
-                    >
-                        <Input placeholder="Nhập mã sản phẩm" />
-                    </Form.Item>
-                    <Form.Item
-                        label="Mô tả"
-                        name="description"
-                        rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
-                    >
-                        <Input.TextArea placeholder="Nhập mô tả sản phẩm" />
-                    </Form.Item>
-                    <Form.Item
-                        label="Thương hiệu"
-                        name="brand"
-                        rules={[{ required: true, message: "Vui lòng nhập thương hiệu" }]}
-                    >
-                        <Input placeholder="Nhập thương hiệu" />
-                    </Form.Item>
-                    <Form.Item
-                        label="Giá"
-                        name="price"
-                        rules={[
-                            { required: true, message: "Vui lòng nhập giá" },
-                            { pattern: /^\d+$/, message: "Giá phải là số" }
-                        ]}
-                    >
-                        <Input placeholder="Nhập giá (VND)" />
-                    </Form.Item>
-
-                    {/* <Form.Item name="numBuy" label="Lượt mua ảo">
-                        <InputNumber type="number" style={{ width: "100%" }} min={0} />
-                    </Form.Item>
-
-                    <Form.Item name="averageStar" label="Đánh giá">
-                        <InputNumber type="number" style={{ width: "100%" }} min={0} max={5} />
-                    </Form.Item> */}
-
-            {/* <Form.Item
-                        label="Tỷ lệ khuyến mại (%)"
-                        name="discount"
-                        rules={[
-                            { required: true, message: "Vui lòng nhập tỷ lệ khuyến mại" },
-                            { pattern: /^\d+$/, message: "Phải là số" }
-                        ]}
-                    >
-                        <Input placeholder="Nhập giá (VND)" />
-                    </Form.Item>
-                    <Form.Item
-                        label="Ảnh sản phẩm"
-                        required
-                    >
-                        <Upload
-                            listType="picture-card"
-                            fileList={imageList}
-                            onChange={({ fileList }) => setImageList(fileList)}
-                            customRequest={customRequest}
-                            multiple
-                            accept="image/*"
-                        >
-                            {imageList.length < 5 && (
-                                <div>
-                                    <UploadOutlined />
-                                    <div style={{ marginTop: 8 }}>Tải lên</div>
-                                </div>
-                            )}
-                        </Upload>
-                        <div style={{ color: "#888", fontSize: 12 }}>Chọn tối đa 5 ảnh. Ảnh đầu tiên sẽ là thumbnail.</div>
-                    </Form.Item>
-                </Form>
-            </Modal> */}
             {/* Modal tạo biến thể sản phẩm */}
             <Modal
                 title={`Tạo biến thể cho sản phẩm${variantProduct ? `: ${variantProduct.name}` : ""
@@ -774,6 +847,10 @@ function ProductsPage() {
                     initialValues={
                         variantProduct
                             ? {
+                                itemId: variantProduct.itemId,
+                                itemColorId: undefined,
+                                itemSizeId: undefined,
+                                quantity: undefined,
                                 price:
                                     variantProduct &&
                                         variantProduct.price &&
@@ -789,7 +866,7 @@ function ProductsPage() {
                     layout="vertical"
                     preserve={false}
                 >
-                    <Form.Item label="ID sản phẩm" name="itemId" hidden>
+                    <Form.Item label="ID sản phẩm" name="itemId" style={{ display: "none" }}>
                         <Input />
                     </Form.Item>
                     <Form.Item
