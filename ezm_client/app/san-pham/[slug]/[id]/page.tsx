@@ -52,7 +52,7 @@ async function ProductPage(props: { params: any }) {
                         <p>({genRandomNumberInRange(44, 55)})</p>
                     </div>
                 </div>
-                <p className="mt-2 text-3xl font-semibold">{detail.name}</p>
+                <p className="mt-2 text-base font-semibold">{detail.name}</p>
                 <div className="mt-2 flex flex-wrap gap-2">
                     {variants.map(item => {
                         const gender = item?.item_variant_item_size_fk?.gender ?? "";

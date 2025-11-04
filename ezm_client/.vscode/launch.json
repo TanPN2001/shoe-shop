@@ -1,0 +1,51 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "pwa-node",
+      "request": "launch",
+      "name": "Next.js: Launch dev (inspect)",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "--inspect=9229",
+        "${workspaceFolder}/node_modules/next/dist/bin/next",
+        "dev",
+        "--turbopack"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"],
+      "env": {
+        "NODE_OPTIONS": "--enable-source-maps"
+      },
+      "port": 9229
+    },
+    {
+      "type": "pwa-node",
+      "request": "attach",
+      "name": "Next.js: Attach to server (9229)",
+      "port": 9229,
+      "restart": true,
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "type": "pwa-chrome",
+      "request": "launch",
+      "name": "Web: Open Chrome (http://localhost:3000)",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}",
+      "skipFiles": ["**/node_modules/**"]
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Full-stack Debug (Server + Browser)",
+      "configurations": [
+        "Next.js: Launch dev (inspect)",
+        "Web: Open Chrome (http://localhost:3000)"
+      ]
+    }
+  ]
+}
+
+

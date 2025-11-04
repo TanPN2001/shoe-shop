@@ -28,6 +28,9 @@ function LayoutHeader() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="bg-black">
                         <DropdownMenuItem asChild>
+                            <Link href="/danh-muc/tat-ca" className="block px-4 py-3 text-white hover:bg-ezman-red">Tất cả</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
                             <Link href="/danh-muc/giay-sneaker" className="block px-4 py-3 text-white hover:bg-ezman-red">Giày sneaker</Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
