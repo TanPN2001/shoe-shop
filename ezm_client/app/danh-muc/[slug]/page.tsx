@@ -61,7 +61,7 @@ async function CategoryPage(props: { params: any; searchParams: any }) {
 				category: getItemType?.data?.data as CategoryDocument,
 			};
 		} catch (err) {
-			// redirect('/404');
+			redirect('/404');
 		}
 	};
 
