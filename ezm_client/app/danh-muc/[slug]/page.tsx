@@ -57,8 +57,8 @@ async function CategoryPage(props: { params: any; searchParams: any }) {
 				server.get(`/item-type-by-slug/${slug}`),
 			]);
 			return {
-				products: getItems.data.data as ProductDocument[],
-				category: getItemType.data.data as CategoryDocument,
+				products: getItems?.data?.data as ProductDocument[],
+				category: getItemType?.data?.data as CategoryDocument,
 			};
 		} catch (err) {
 			// redirect('/404');
