@@ -3,12 +3,14 @@ import { toast } from "sonner"
 import { ChangeEventHandler, Dispatch, FormEventHandler, SetStateAction, useState } from "react"
 import { useSetAtom } from "jotai"
 import { USER_DETAIL } from "@/services/service.atom"
+import { useRouter } from "next/navigation"
 
 type Props = { setOpen: Dispatch<SetStateAction<boolean>> }
 
 function AuthFormLogin({ setOpen }: Props) {
     const [form, setForm] = useState({ username: "", password: "" })
     const setUserDetail = useSetAtom(USER_DETAIL)
+    const router = useRouter();
 
     const submit: FormEventHandler<HTMLFormElement> = async (event) => {
         event.preventDefault()
@@ -24,6 +26,16 @@ function AuthFormLogin({ setOpen }: Props) {
             localStorage.setItem("ezman-token", data.data.token)
             toast.success("Đăng ký thành công", { position: "top-center" })
             setOpen(false)
+            // 🟢 Kiểm tra xem có hành động mua ngay đang chờ không
+            const redirectAction = localStorage.getItem("redirectAfterLogin");
+            if (redirectAction) {
+                const { type, productId, slug, variantId } = JSON.parse(redirectAction);
+                if (type === "buyNow") {
+                    localStorage.removeItem("redirectAfterLogin");
+                    router.push(`/dat-hang?productId=${productId}&product=${slug}&variant=${variantId}`);
+                    return;
+                }
+            }
         } catch (err: any) {
             console.log(err)
             toast.error(err?.response?.data?.message ?? err.message, { position: "top-center" })

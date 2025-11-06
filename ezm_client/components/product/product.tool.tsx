@@ -7,6 +7,16 @@ import { toast } from "sonner";
 import { useEffect, useMemo, useState } from "react";
 import { save } from "@/services/service.storage";
 import './product.tool.css';
+import AuthFormLogin from "../layout/auth-form/auth-form.login";
+import {
+    Dialog,
+    DialogContent,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { LabelWithIcon } from "../common/label-icon";
+import AuthFormRegister from "../layout/auth-form/auth-form.register";
+import { IoPersonOutline } from "react-icons/io5";
 
 type Props = {
     product: ProductDocument
@@ -21,6 +31,26 @@ function ProductTool({ product, variants }: Props) {
     const router = useRouter();
     const [selectedColor, setSelectedColor] = useState<any | undefined>(undefined);
     const [selectedSize, setSelectedSize] = useState<any | undefined>(undefined);
+    const [openLogin, setOpenLogin] = useState(false);
+
+    useEffect(() => {
+        const savedOrder = localStorage.getItem("order");
+        if (savedOrder) {
+            setOrder(JSON.parse(savedOrder));
+        }
+    }, []);
+
+    useEffect(() => {
+        const redirectAction = localStorage.getItem("redirectAfterLogin");
+        if (redirectAction) {
+            const { type, productId, slug, variantId } = JSON.parse(redirectAction);
+            if (type === "buyNow") {
+                localStorage.removeItem("redirectAfterLogin");
+                router.push(`/dat-hang?productId=${productId}&product=${slug}&variant=${variantId}`);
+            }
+        }
+    }, []);
+
 
     // Lấy danh sách màu & size duy nhất
     const uniqueColors = useMemo(() => {
@@ -113,16 +143,9 @@ function ProductTool({ product, variants }: Props) {
             );
             setSelectedVariant(found);
         } else {
-            // Nếu chưa chọn đủ thì reset variant
             setSelectedVariant(undefined);
         }
     };
-
-    useEffect(() => {
-        console.log("loanhtm Selected Color:", selectedColor);
-        console.log("loanhtm Selected Size:", selectedSize);
-        console.log("loanhtm Selected Variant:", selectedVariant);
-    }, [selectedColor, selectedSize, selectedVariant]);
 
     const addToCart = () => {
         // Tìm xem sản phẩm đã có trong giỏ chưa (dựa vào id)
@@ -158,17 +181,34 @@ function ProductTool({ product, variants }: Props) {
     const orderNow = () => {
         try {
             if (!selectedVariant) throw new Error("Vui lòng chọn size");
-            if (!selectedColor) throw new Error("Vui lòng chọn màu")
-            const temp = {
-                product: product,
-                variants: selectedVariant,
-                quantity: 1
-            }
-            // addToCart()
+            if (!selectedColor) throw new Error("Vui lòng chọn màu");
+
+            const token = localStorage.getItem("ezman-token");
+            const temp = { product, variants: selectedVariant, quantity: 1 };
+
             setOrder(temp);
-            router.push(`/dat-hang?product=${product.itemId}&&variant=${selectedVariant.itemId}`)
-        } catch (err: any) { toast.error(err.message) }
-    }
+            localStorage.setItem("order", JSON.stringify(temp));
+
+            if (!token) {
+                localStorage.setItem(
+                    "redirectAfterLogin",
+                    JSON.stringify({
+                        type: "buyNow",
+                        productId: product.itemId,
+                        slug: product.slug,
+                        variantId: selectedVariant.itemVariantId,
+                    })
+                );
+                setOpenLogin(true);
+                return;
+            }
+
+            router.push(`/dat-hang?productId=${product.itemId}&product=${product.slug}&variant=${selectedVariant.itemVariantId}`);
+        } catch (err: any) {
+            toast.error(err.message);
+        }
+    };
+
 
     return <div className="!sticky !bottom-0 flex py-2 items-center flex-col lg:flex-row space-x-0 space-y-4 lg:space-y-0 lg:space-x-2">
         {/* Bộ select size sử dụng shadcn */}
@@ -220,6 +260,30 @@ function ProductTool({ product, variants }: Props) {
                 Mua ngay - {selectedVariant ? Number(selectedVariant?.price || 0).toLocaleString() : 0}đ
             </button>
         </div>
+
+        {openLogin && (
+            <Dialog open={openLogin} onOpenChange={setOpenLogin}>
+                <DialogTrigger>
+                    <LabelWithIcon className="cursor-pointer text-white" icon={<IoPersonOutline className="text-[24px] lg:text-base" />}>
+                        <span className="lg:flex hidden">Đăng nhập</span>
+                    </LabelWithIcon>
+                </DialogTrigger>
+                <DialogContent>
+                    <Tabs defaultValue="login" className="">
+                        <TabsList>
+                            <TabsTrigger value="login" className="cursor-pointer custom-tab-trigger text-lg">Đăng nhập</TabsTrigger>
+                            <TabsTrigger value="register" className="cursor-pointer custom-tab-trigger text-lg">Đăng ký</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="login" className="w-full">
+                            <AuthFormLogin setOpen={setOpenLogin} />
+                        </TabsContent>
+                        <TabsContent value="register">
+                            <AuthFormRegister setOpen={setOpenLogin} />
+                        </TabsContent>
+                    </Tabs>
+                </DialogContent>
+            </Dialog>
+        )}
     </div>
 };
 export default ProductTool
