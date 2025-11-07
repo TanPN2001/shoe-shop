@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState, useCallback, ChangeEventHandler } from 'react';
+import { Suspense, useEffect, useState, useCallback, ChangeEventHandler } from 'react';
 import { useAtom } from 'jotai';
 import { toast } from 'sonner';
 import debounce from 'lodash.debounce';
@@ -22,7 +22,7 @@ type PriceInfo = {
 	total: number;
 };
 
-function OrderPage() {
+function OrderPageContent() {
 	const [cart, setCart] = useAtom(CART);
 	const searchParams = useSearchParams();
 	const productId = searchParams.get('productId');
@@ -426,5 +426,17 @@ function OrderPage() {
 		</div>
 	);
 };
+
+function OrderPage() {
+	return (
+		<Suspense
+			fallback={
+				<div className="px-4 lg:px-12 py-12 text-white">Đang tải dữ liệu đơn hàng...</div>
+			}
+		>
+			<OrderPageContent />
+		</Suspense>
+	);
+}
 
 export default OrderPage;
