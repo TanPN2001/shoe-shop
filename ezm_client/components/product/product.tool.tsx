@@ -225,7 +225,8 @@ function ProductTool({ product, variants }: Props) {
                 <SelectContent>
                     {filteredSizes.map(size => (
                         <SelectItem key={size.itemSizeId} value={String(size.itemSizeId)}>
-                            {size.name} - {size.gender}
+                            {/* {size.name} - {size.gender} */}
+                             {size.name}
                         </SelectItem>
                     ))}
                 </SelectContent>

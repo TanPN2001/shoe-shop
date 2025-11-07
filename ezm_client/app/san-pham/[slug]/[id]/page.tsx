@@ -72,7 +72,8 @@ async function ProductPage(props: { params: any }) {
                                 `}
                             >
                                 <p className="whitespace-nowrap text-center">
-                                    {[gender, color, size].filter(Boolean).join(", ")}
+                                    {/* {[gender, color, size].filter(Boolean).join(", ")} */}
+                                    {[color, size].filter(Boolean).join(", ")}
                                 </p>
                                 {soldOut ? (
                                     <span className="tag_sold-out mt-1 whitespace-nowrap">Hết hàng</span>
