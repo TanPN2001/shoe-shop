@@ -24,7 +24,7 @@ function AuthFormLogin({ setOpen }: Props) {
             const { data } = await api.post("/auth/login", form)
             setUserDetail(data.data.detail)
             localStorage.setItem("ezman-token", data.data.token)
-            toast.success("Đăng ký thành công", { position: "top-center" })
+            toast.success("Đăng nhập thành công", { position: "top-center" })
             setOpen(false)
             // 🟢 Kiểm tra xem có hành động mua ngay đang chờ không
             const redirectAction = localStorage.getItem("redirectAfterLogin");
