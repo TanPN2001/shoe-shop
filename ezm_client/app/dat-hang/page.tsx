@@ -410,7 +410,7 @@ function OrderPageContent() {
 
 							<div className="text-gray-500 flex justify-between items-center">
 								<span className="font-semibold text-lg">Giảm giá</span>
-								<span className="font-semibold text-lg text-white-500">-{Number(priceInfo.voucherDiscount).toLocaleString()}đ</span>
+								<span className="font-semibold text-lg text-white">-{Number(priceInfo.voucherDiscount).toLocaleString()}đ</span>
 							</div>
 
 							<div className="flex justify-between items-center">
