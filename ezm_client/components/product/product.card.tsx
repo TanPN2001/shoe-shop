@@ -5,7 +5,7 @@ import Rating from "../ui/rating";
 type Props = { detail: ProductDocument }
 
 function ProductCard(props: Props) {
-    console.log("loanhtm: ", props.detail);
+
     return <Link href={"/san-pham/" + props.detail.slug + "/" + props.detail.itemId} className="block">
         <div className="w-full">
             <div className="relative group product-card-img">
