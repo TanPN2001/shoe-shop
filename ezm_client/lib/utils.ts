@@ -19,14 +19,10 @@ export const calculateItemPrice = (
 	discount: number,
 	amountOff: number
 ) => {
-	// console.log('tanpn2001');
-	// console.log(price, discount, amountOff);
-
 	let itemPrice = price;
 
-	// Áp dụng discount nếu có
 	if (discount && discount > 0) {
-		itemPrice = itemPrice * (1 - discount);
+		itemPrice = itemPrice * (1 - discount/100);
 	}
 	// Áp dụng amountOff nếu có (ưu tiên amountOff nếu cả hai đều có)
 	else if (amountOff && amountOff > 0) {

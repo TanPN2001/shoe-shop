@@ -101,6 +101,7 @@ async function ProductPage(props: { params: any }) {
 				<div className="relative text-white flex-grow">
 					<div className="flex items-center gap-4">
 						<p className="text-2xl font-medium">
+							{/* {console.log("loanhtm detail: ", detail)} */}
 							{calculateItemPrice(
 								Number(detail.price),
 								Number(detail.discount ?? 0),
