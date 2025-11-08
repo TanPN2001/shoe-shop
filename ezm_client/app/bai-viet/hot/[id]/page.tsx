@@ -11,7 +11,8 @@ export default function HotPostPage({ params }: { params: any }) {
             <div className="px-4 lg:px-12 py-12 text-white">
                 <div className="max-w-4xl mx-auto text-center">
                     <h1 className="text-3xl font-bold mb-2">Bài viết không tồn tại</h1>
-                    <p>Không tìm thấy bài viết với ID: {params.id}</p>
+                    {/* <p>Không tìm thấy bài viết với ID: {params.id}</p> */}
+                    <p>Không tìm thấy bài viết</p>
                 </div>
             </div>
         )
@@ -61,7 +62,7 @@ export default function HotPostPage({ params }: { params: any }) {
 
                     <aside className="text-white">
                         <div className="sticky top-24">
-                            
+
                             <div className="p-4 rounded-xl border border-neutral-800/50 bg-neutral-900/60">
                                 <h3 className="text-lg font-semibold mb-4">Bài viết liên quan</h3>
                                 <div className="grid grid-cols-1 gap-5">

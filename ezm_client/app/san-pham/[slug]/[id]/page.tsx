@@ -6,9 +6,11 @@ import Rating from '@/components/ui/rating';
 import { calculateItemPrice, genRandomNumberInRange } from '@/lib/utils';
 import { server } from '@/services/service.api';
 import './style.css';
+import Link from 'next/link';
 
 async function ProductPage(props: { params: any }) {
 	const { slug, id } = await props.params;
+
 	const loader = async (id: string | number, slug: string) => {
 		const [getItemDetail, getItemVariants] = await Promise.all([
 			server.get(`/item/by-slug/${slug}`),
@@ -22,19 +24,17 @@ async function ProductPage(props: { params: any }) {
 
 	const { detail, variants } = await loader(id, slug);
 
-	console.log('getItemDetail: ', variants);
-
 	return (
 		<div className="px-4 lg:px-12">
 			<div className="text-white flex items-center gap-2 mb-6">
-				<p className="text-lg text-ezman-red font-bold font-ezman">EZMAN</p>
+				<p className="text-lg text-ezman-red font-bold font-ezman"><Link href="/" className="cursor-pointer">EZMAN</Link></p>
 				<p> / </p>
-				<p className="font-semibold">{detail.name}</p>
+				<p className="font-semibold">{detail?.name || ''}</p>
 			</div>
 
-			<div className="text-white pt-8"></div>
+			{/* <div className="text-white pt-8"></div>
 
-			<div className="mt-3 page-tools flex py-3 justify-between"></div>
+			<div className="mt-3 page-tools flex py-3 justify-between"></div> */}
 
 			<div className="">
 				<ProductImages detail={detail} />
@@ -44,14 +44,17 @@ async function ProductPage(props: { params: any }) {
 				<div className="text-white w-auto lg:w-[720px]">
 					<div className="flex items-center justify-between">
 						<span className="text-ezman-red font-ezman brand-text text-3xl font-semibold">
-							/ {detail.brand} /
+							/ {detail?.brand} /
 						</span>
 						<div className="stars flex items-center gap-2">
 							<Rating
-								value={5}
+								value={detail?.averageStar ?? 5}
 								readOnly
 							/>
-							<p>({genRandomNumberInRange(44, 55)})</p>
+							<p>
+								{/* ({genRandomNumberInRange(44, 55)}) */}
+								({detail?.averageStar ?? 0}/5 sao)
+							</p>
 						</div>
 					</div>
 					<p className="mt-2 text-base font-semibold">{detail.name}</p>
@@ -70,11 +73,10 @@ async function ProductPage(props: { params: any }) {
                                     px-3 py-2 lg:px-5 lg:py-3 text-sm
                                     bg-[#2e2e2e] transition-all duration-200
                                     border-l-3
-                                    ${
-																			soldOut
-																				? 'border-gray-500 cursor-not-allowed'
-																				: 'border-red-500 cursor-pointer'
-																		}
+                                    ${soldOut
+											? 'border-gray-500 cursor-not-allowed'
+											: 'border-red-500 cursor-pointer'
+										}
                                 `}
 								>
 									<p className="whitespace-nowrap text-center">
@@ -94,6 +96,7 @@ async function ProductPage(props: { params: any }) {
 							);
 						})}
 					</div>
+					<ProductReview item={detail} />
 				</div>
 				<div className="relative text-white flex-grow">
 					<div className="flex items-center gap-4">
@@ -114,12 +117,12 @@ async function ProductPage(props: { params: any }) {
 							{detail.discount && parseFloat(detail.discount) > 0
 								? `[ -${detail.discount}% ]`
 								: detail.amountOff && parseFloat(detail.amountOff) > 0
-								? `[-${detail.amountOff}]`
-								: ``}
+									? `[-${detail.amountOff}]`
+									: ``}
 						</p>
 					</div>
 					<div className="mt-10 border-b border-ezman-red  pb-3">
-						<p className="font-medium">Thông tin sản phẩm</p>
+						<p className="font-semibold text-[20px] mb-2">Thông tin sản phẩm</p>
 						<p>
 							- Mã sản phẩm:{' '}
 							<span className="text-red-500 font-semibold">
@@ -132,11 +135,11 @@ async function ProductPage(props: { params: any }) {
 						</p>
 					</div>
 					<div className="mt-4 border-b border-ezman-red pb-3">
-						<p className="font-medium">Mô tả về sản phẩm</p>
+						<p className="font-semibold text-[20px] mb-2">Mô tả sản phẩm</p>
 						<p>{detail.description}</p>
 					</div>
 					<div className="mt-4  pb-3">
-						<p className="font-medium">Liên hệ tư vấn</p>
+						<p className="font-semibold text-[20px] mb-2">Liên hệ tư vấn</p>
 						<p>
 							- Zalo:{' '}
 							<a
@@ -176,7 +179,7 @@ async function ProductPage(props: { params: any }) {
 						</p>
 					</div>
 
-					<ProductReview item={detail} />
+					{/* <ProductReview item={detail} /> */}
 					<ProductTool
 						product={detail}
 						variants={variants}

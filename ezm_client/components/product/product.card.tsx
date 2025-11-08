@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { GoStar, GoStarFill } from "react-icons/go";
+import Rating from "../ui/rating";
 
 type Props = { detail: ProductDocument }
 
 function ProductCard(props: Props) {
-
+    console.log("loanhtm: ", props.detail);
     return <Link href={"/san-pham/" + props.detail.slug + "/" + props.detail.itemId} className="block">
         <div className="w-full">
             <div className="relative group product-card-img">
@@ -23,16 +24,23 @@ function ProductCard(props: Props) {
                 <div className="top flex justify-between text-white items-center !py-1">
                     <p className="text-ezman-red font-ezman uppercase">/{props.detail.brand}/</p>
                     <div className="flex items-center">
-                        <GoStarFill className="text-sm text-yellow-400" />
-                        <GoStarFill className="text-sm text-yellow-400" />
-                        <GoStarFill className="text-sm text-yellow-400" />
-                        <GoStarFill className="text-sm text-yellow-400" />
-                        <GoStar className="text-sm text-yellow-400" />
-                        <span className="!ml-1 text-sm">({props.detail.averageStar})</span>
+                        {[1, 2, 3, 4, 5].map((index) => {
+                            const rating = props?.detail?.averageStar ?? 5;
+                            return index <= Math.round(rating) ? (
+                                <GoStarFill key={index} className="text-sm text-yellow-400" />
+                            ) : (
+                                <GoStar key={index} className="text-sm text-yellow-400" />
+                            );
+                        })}
+                        <span className="!ml-1 text-sm">
+                            ({props?.detail?.averageStar ?? 5}/5)
+                        </span>
                     </div>
                 </div>
                 <div className="text-gray-100">
-                    <p>{props.detail.name}</p>
+                    <p className="text-white text-sm lg:text-base leading-5 h-[2.5rem] overflow-hidden line-clamp-2">
+                        {props.detail.name}
+                    </p>
 
                     <div className="flex gap-6 items-center">
                         <span className="font-medium text-white text-sm lg:text-base">

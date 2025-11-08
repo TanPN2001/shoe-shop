@@ -24,7 +24,6 @@ type Props = {
 }
 
 function ProductTool({ product, variants }: Props) {
-    console.log("loanhtm variants: ", variants);
     const [cart, setCart] = useAtom(CART);
     const [order, setOrder] = useAtom(ORDER);
     const [selectedVariant, setSelectedVariant] = useState<VariantDocument | undefined>(undefined);
@@ -214,7 +213,7 @@ function ProductTool({ product, variants }: Props) {
         {/* Bộ select size sử dụng shadcn */}
 
         {/* Select Size */}
-        <div className="lg:w-44 w-full">
+        <div className="lg:w-44 w-full" translate="no">
             <Select
                 value={selectedSize ? String(selectedSize.itemSizeId) : ''}
                 onValueChange={handleSelectSize}
@@ -226,7 +225,7 @@ function ProductTool({ product, variants }: Props) {
                     {filteredSizes.map(size => (
                         <SelectItem key={size.itemSizeId} value={String(size.itemSizeId)}>
                             {/* {size.name} - {size.gender} */}
-                             {size.name}
+                            {size.name}
                         </SelectItem>
                     ))}
                 </SelectContent>
@@ -234,7 +233,7 @@ function ProductTool({ product, variants }: Props) {
         </div>
 
         {/* Select Màu */}
-        <div className="lg:w-44 w-full">
+        <div className="lg:w-44 w-full" translate="no">
             <Select
                 value={selectedColor ? String(selectedColor.itemColorId) : ""}
                 onValueChange={handleSelectColor}

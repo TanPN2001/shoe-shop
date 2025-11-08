@@ -77,7 +77,7 @@ function ProductReview({ item }: Props) {
     const visibleComments = showAll ? comments : comments.slice(0, 3);
 
     return <div className="pt-2 space-y-8">
-        <p className="font-medium">Bình luận và đánh giá</p>
+        <p className="font-semibold text-[20px] mt-3 border-t border-ezman-red mb-3 pt-3">Bình luận và đánh giá</p>
         <div className="relative">
             <div className="">
                 {comments.length === 0 ? (
@@ -88,10 +88,10 @@ function ProductReview({ item }: Props) {
                 ) : (
                     <div>
                         {visibleComments.map(comment => (
-                            <div key={comment.commentId} className="mb-6 border-b border-gray-700 pb-4">
+                            <div key={comment.commentId} className="mb-4 border-b border-gray-700 pb-4">
                                 <div className="flex items-center space-x-2 mb-1">
-                                    <Rating value={comment.star} readOnly size={18} />
-                                    <span className="text-sm text-gray-400">{comment.star} sao</span>
+                                    <Rating value={comment?.star ?? 5} readOnly size={18} />
+                                    <span className="text-sm text-gray-400">{comment?.star ?? 5} sao</span>
                                     <span className="text-xs text-gray-500 ml-4">
                                         {new Date(comment.createdAt).toLocaleString("vi-VN")}
                                     </span>
