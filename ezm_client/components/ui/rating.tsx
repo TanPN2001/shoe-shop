@@ -75,9 +75,8 @@ export default function Rating({
             aria-disabled={disabled || undefined}
             tabIndex={readOnly || disabled ? -1 : 0}
             onKeyDown={handleKeyDown}
-            className={`inline-flex items-center gap-1 select-none ${
-                disabled ? "opacity-60 cursor-not-allowed" : (!readOnly ? "cursor-pointer" : "")
-            } ${className ?? ""}`}
+            className={`inline-flex items-center gap-1 select-none ${disabled ? "opacity-60 cursor-not-allowed" : (!readOnly ? "cursor-pointer" : "")
+                } ${className ?? ""}`}
             onMouseLeave={() => setHoverValue(null)}
         >
             {stars.map((star) => {

@@ -24,7 +24,6 @@ type Props = {
 }
 
 function ProductTool({ product, variants }: Props) {
-    console.log("loanhtm variants: ", variants);
     const [cart, setCart] = useAtom(CART);
     const [order, setOrder] = useAtom(ORDER);
     const [selectedVariant, setSelectedVariant] = useState<VariantDocument | undefined>(undefined);
