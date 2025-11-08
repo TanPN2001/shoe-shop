@@ -111,7 +111,11 @@ async function ProductPage(props: { params: any }) {
 							{Number(detail.price).toLocaleString()}đ
 						</p>
 						<p className="text-ezman-red text-2xl font-semibold">
-							[-{detail.discount}%]
+							{detail.discount && parseFloat(detail.discount) > 0
+								? `[ -${detail.discount}% ]`
+								: detail.amountOff && parseFloat(detail.amountOff) > 0
+								? `[-${detail.amountOff}]`
+								: ``}
 						</p>
 					</div>
 					<div className="mt-10 border-b border-ezman-red  pb-3">
