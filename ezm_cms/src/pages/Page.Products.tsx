@@ -34,16 +34,14 @@ function ProductsPage() {
 		const res = await api.get<{ data: ProductDocument[]; paging: Paging }>(
 			'/item/get'
 		);
+		// const res = await api.get<{ data: ProductDocument[]; count: number }>(
+		// 	'/item/get'
+		// );
 		const items = res.data.data;
 		const paging = res.data.paging;
 
 		const updatedProducts = await Promise.all(
 			items.map(async (product) => {
-				// const variants = (product?.item__variant_item_fk as any[]) || [];
-				// const total = variants
-				//         .filter((v) => v.status === 1)
-				//         .reduce((sum, v) => sum + (v.quantity || 0), 0);
-
 				const re = await api.get(
 					`/item-variant/detail-by-item/${product?.itemId}`
 				);
@@ -58,7 +56,6 @@ function ProductsPage() {
 					name: v?.item_variant_item_size_fk?.name,
 					quantity: v?.quantity,
 				}));
-				console.log('loan listSize: ', listSize);
 				return {
 					...product,
 					totalVariants: total,
@@ -382,8 +379,8 @@ function ProductsPage() {
 			Array.isArray(product.images) && product.images.length > 0
 				? product.images
 				: product.thumbnail
-				? [product.thumbnail]
-				: [];
+					? [product.thumbnail]
+					: [];
 
 		const fileList = sourceImages.map((imgUrl, idx) => ({
 			uid: `${idx}`,
@@ -456,7 +453,7 @@ function ProductsPage() {
 			setUploading(false);
 		}
 	};
-
+	console.log("loanhtm2 listProduct: ", listProduct)
 	return (
 		<div>
 			<Button
@@ -470,13 +467,13 @@ function ProductsPage() {
 			<Table
 				columns={columns}
 				dataSource={listProduct.data}
-				// scroll={{ x: true }}
-				// pagination={{
-				//     current: listProduct.paging.pageIndex,
-				//     pageSize: listProduct.paging.pageSize,
-				//     total: listProduct.paging.total,
-				//     showSizeChanger: true,
-				// }}
+			// scroll={{ x: true }}
+			// pagination={{
+			//     current: listProduct.paging.pageIndex,
+			//     pageSize: listProduct.paging.pageSize,
+			//     total: listProduct.paging.total,
+			//     showSizeChanger: true,
+			// }}
 			/>
 			{/* Modal tạo sản phẩm */}
 			<Modal
@@ -489,7 +486,7 @@ function ProductsPage() {
 				cancelText="Hủy"
 				// width={1100}
 				width={'fit-content'}
-				// destroyOnHidden
+			// destroyOnHidden
 			>
 				<div style={{ display: 'flex', gap: 24 }}>
 					{/* CỘT TRÁI: Thông tin sản phẩm */}
@@ -626,80 +623,6 @@ function ProductsPage() {
 							</Button>
 						</div>
 
-						{/* {variantsS.map((variant: any, index: any) => (
-                            <div
-                                key={index}
-                                style={{
-                                    display: "grid",
-                                    gridTemplateColumns: "1fr 1fr 1fr 1fr auto",
-                                    gap: 8,
-                                    marginBottom: 10,
-                                    alignItems: "center",
-                                }}
-                            >
-                                <Select
-                                    placeholder="Size"
-                                    value={variant.size || undefined}
-                                    onChange={(value) =>
-                                        updateVariant(index, { ...variant, itemSizeId: value })
-                                    }
-                                    options={sizes.map((s) => ({
-                                        label: s.name,
-                                        value: s.itemSizeId,
-                                    }))}
-                                    showSearch
-                                    optionFilterProp="label"
-                                />
-                                <Select
-                                    placeholder="Màu sắc"
-                                    value={variant.color || undefined}
-                                    onChange={(value) =>
-                                        updateVariant(index, { ...variant, itemColorId: value })
-                                    }
-                                    options={colors.map((c) => ({
-                                        label: c.name,
-                                        value: c.itemColorId,
-                                    }))}
-                                    showSearch
-                                    optionFilterProp="label"
-                                />
-                                <Input
-                                    placeholder="Số lượng"
-                                    type="number"
-                                    value={variant.quantity ?? ""}
-                                    onChange={(e) =>
-                                        updateVariant(index, {
-                                            ...variant,
-                                            quantity: e.target.value ? Number(e.target.value) : undefined,
-                                        })
-                                    }
-                                />
-
-                                <Input
-                                    placeholder="Giá"
-                                    type="number"
-                                    value={variant.price ?? ""}
-                                    onChange={(e) =>
-                                        updateVariant(index, {
-                                            ...variant,
-                                            price: e.target.value ? Number(e.target.value) : undefined,
-                                        })
-                                    }
-                                />
-
-                                <Button
-                                    danger
-                                    type="text"
-                                    onClick={() =>
-                                        setVariantsS((prev: any) =>
-                                            prev.filter((_: any, i: any) => i !== index)
-                                        )
-                                    }
-                                >
-                                    X
-                                </Button>
-                            </div>
-                        ))} */}
 						{variantsS.map((variant: any, index: any) => {
 							// Kiểm tra lỗi
 							const errors = {
@@ -709,26 +632,26 @@ function ProductsPage() {
 									variant.quantity === undefined || variant.quantity === ''
 										? 'Bắt buộc'
 										: variant.quantity < 0
-										? 'Số lượng >= 0'
-										: '',
+											? 'Số lượng >= 0'
+											: '',
 								price:
 									variant.price === undefined || variant.price === ''
 										? 'Bắt buộc'
 										: variant.price < 0
-										? 'Giá >= 0'
-										: '',
+											? 'Giá >= 0'
+											: '',
 								discount:
 									variant.discount === undefined || variant.discount === ''
 										? 0
 										: variant.discount > 1 || variant.discount < 0
-										? 'Khuyến mãi >= 0 và <= 1'
-										: 0,
+											? 'Khuyến mãi >= 0 và <= 1'
+											: 0,
 								amountOff:
 									variant.amountOff === undefined || variant.amountOff === ''
 										? 0
 										: variant.amountOff < 0
-										? 'Giảm giá tiền >= 0'
-										: 0,
+											? 'Giảm giá tiền >= 0'
+											: 0,
 							};
 
 							const hasError = (field: keyof typeof errors) =>
@@ -918,9 +841,8 @@ function ProductsPage() {
 
 			{/* Modal tạo biến thể sản phẩm */}
 			<Modal
-				title={`Tạo biến thể cho sản phẩm${
-					variantProduct ? `: ${variantProduct.name}` : ''
-				}`}
+				title={`Tạo biến thể cho sản phẩm${variantProduct ? `: ${variantProduct.name}` : ''
+					}`}
 				open={isVariantModalOpen}
 				onOk={handleVariantOk}
 				onCancel={handleVariantCancel}
@@ -933,20 +855,20 @@ function ProductsPage() {
 					initialValues={
 						variantProduct
 							? {
-									itemId: variantProduct.itemId,
-									itemColorId: undefined,
-									itemSizeId: undefined,
-									quantity: undefined,
-									price:
-										variantProduct &&
+								itemId: variantProduct.itemId,
+								itemColorId: undefined,
+								itemSizeId: undefined,
+								quantity: undefined,
+								price:
+									variantProduct &&
 										variantProduct.price &&
 										variantProduct.discount
-											? Math.round(
-													Number(variantProduct.price) *
-														(1 - Number(variantProduct.discount) / 100)
-											  )
-											: undefined,
-							  }
+										? Math.round(
+											Number(variantProduct.price) *
+											(1 - Number(variantProduct.discount) / 100)
+										)
+										: undefined,
+							}
 							: {}
 					}
 					layout="vertical"
@@ -1027,18 +949,18 @@ function ProductsPage() {
 					initialValues={
 						editingProduct
 							? {
-									name: editingProduct.name,
-									code: editingProduct.code,
-									description: editingProduct.description,
-									brand: editingProduct.brand,
-									price: editingProduct.price,
-									itemTypeId:
-										editingProduct.itemTypeId ??
-										editingProduct.item_item_type_fk?.itemTypeId,
-									discount: editingProduct.discount,
-									numBuy: editingProduct.numBuy,
-									averageStar: editingProduct.averageStar,
-							  }
+								name: editingProduct.name,
+								code: editingProduct.code,
+								description: editingProduct.description,
+								brand: editingProduct.brand,
+								price: editingProduct.price,
+								itemTypeId:
+									editingProduct.itemTypeId ??
+									editingProduct.item_item_type_fk?.itemTypeId,
+								discount: editingProduct.discount,
+								numBuy: editingProduct.numBuy,
+								averageStar: editingProduct.averageStar,
+							}
 							: {}
 					}
 					layout="vertical"
