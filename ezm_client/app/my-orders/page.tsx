@@ -3,6 +3,7 @@
 import { userService } from "@/services/service.api"
 import { OrderDoc } from "@/types/order"
 import moment from "moment"
+import Link from "next/link"
 import { useEffect, useState } from "react"
 
 type OrderItem = {
@@ -53,7 +54,7 @@ export default function MyOrdersPage() {
     return (
         <div className="px-4 lg:px-12 py-8 min-h-[60vh]">
             <div className="text-white flex items-center gap-2 mb-6">
-                <p className="text-lg text-ezman-red font-bold font-ezman">EZMAN</p>
+                <p className="text-lg text-ezman-red font-bold font-ezman"><Link href="/" className="cursor-pointer">EZMAN</Link></p>
                 <p> / </p>
                 <p className="font-semibold">Đơn hàng của tôi</p>
             </div>
@@ -73,19 +74,19 @@ export default function MyOrdersPage() {
                                     <span className="font-mono">{order.orderId}</span>
                                 </div>
                                 <div className="text-sm text-gray-300">
-                                    Ngày đặt: {moment(order.createdAt).format("DD/MM/YYYY hh:mm")}
+                                    Ngày đặt: {moment(order?.createdAt).format("DD/MM/YYYY hh:mm")}
                                 </div>
                             </div>
                             <div className="mb-2">
                                 <span className="font-semibold">Trạng thái:</span>{" "}
                                 <span>
-                                    {ORDER_STATUS[order.status]}
+                                    {ORDER_STATUS[order?.status ?? '-']}
                                 </span>
                             </div>
                             <div className="mb-2">
-                                <span className="font-semibold">Tổng tiền:</span>{" "}
+                                <span className="font-semibold">Tổng thanh toán:</span>{" "}
                                 <span className="text-ezman-red font-bold">
-                                    {order.amount ? order.amount.toLocaleString() : "--"} ₫
+                                    {order?.amount ? order?.amount.toLocaleString() : "--"} đ
                                 </span>
                             </div>
                             <div>
@@ -94,17 +95,17 @@ export default function MyOrdersPage() {
                                     {order.items.map((item, idx) => (
                                         <li key={idx} className="flex items-center py-2">
                                             <img
-                                                src={item.variant.item.thumbnail}
-                                                alt={item.variant.item.name}
+                                                src={item?.variant?.item?.thumbnail}
+                                                alt={item?.variant?.item?.name ?? 'image'}
                                                 className="w-14 h-14 object-cover rounded mr-3 border"
                                             />
                                             <div className="flex-1">
-                                                <div className="font-medium">{item.variant.item.name}</div>
-                                                <div className="text-xs text-gray-500">{item.variant.color.name}</div>
+                                                <div className="font-medium">{item?.variant?.item?.name ?? ''}</div>
+                                                <div className="text-xs text-gray-500">{item?.variant?.color?.name ?? ''}, {item?.variant?.size?.name ?? ''}</div>
                                             </div>
-                                            <div className="text-sm text-gray-400 mr-4">x{item.quantity}</div>
+                                            <div className="text-sm text-gray-400 mr-4">x{item?.quantity ?? 0}</div>
                                             <div className="text-sm font-semibold text-ezman-red">
-                                                {Number(item.variant.price).toLocaleString()}₫
+                                                {Number(item?.variant?.price ?? 0).toLocaleString()}đ
                                             </div>
                                         </li>
                                     ))}
