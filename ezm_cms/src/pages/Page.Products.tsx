@@ -161,7 +161,15 @@ function ProductsPage() {
 			title: 'Số tiền khuyến mại (%)',
 			dataIndex: 'amountOff',
 			key: 'amountOff',
-			render: (amountOff: any) => (amountOff ? amountOff + 'VNĐ' : '--'),
+			render:
+				(amountOff: any) => (
+					amountOff ?
+						Number(amountOff).toLocaleString('vi-VN', {
+							style: 'currency',
+							currency: 'VND',
+						})
+						: '--'
+				),
 		},
 		// {
 		//     title: "Số lượt mua",
@@ -662,8 +670,8 @@ function ProductsPage() {
 								discount:
 									variant.discount === undefined || variant.discount === ''
 										? 0
-										: variant.discount > 1 || variant.discount < 0
-											? 'Khuyến mãi >= 0 và <= 1'
+										: variant.discount > 100 || variant.discount < 0
+											? 'Khuyến mãi >= 0 và <= 100'
 											: 0,
 								amountOff:
 									variant.amountOff === undefined || variant.amountOff === ''

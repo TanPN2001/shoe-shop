@@ -41,7 +41,16 @@ function ListVariant({ item }: Props) {
         {
             title: "Giá",
             dataIndex: "price",
-            key: "price"
+            key: "price",
+            render:
+                (price: any) => (
+                    price ?
+                        Number(price).toLocaleString('vi-VN', {
+                            style: 'currency',
+                            currency: 'VND',
+                        })
+                        : '--'
+                ),
         },
         {
             title: "Size",
@@ -71,7 +80,16 @@ function ListVariant({ item }: Props) {
         {
             title: "Số tiền khuyến mại (VNĐ)",
             key: "amountOff",
-            dataIndex: 'amountOff'
+            dataIndex: 'amountOff',
+            render:
+                (amountOff: any) => (
+                    amountOff ?
+                        Number(amountOff).toLocaleString('vi-VN', {
+                            style: 'currency',
+                            currency: 'VND',
+                        })
+                        : '--'
+                ),
         },
         {
             title: "Hành động",
