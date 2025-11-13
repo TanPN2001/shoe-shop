@@ -152,10 +152,16 @@ function ProductsPage() {
 				}),
 		},
 		{
-			title: 'Giảm giá',
+			title: 'Tỷ lệ khuyến mại (%)',
 			dataIndex: 'discount',
 			key: 'discount',
 			render: (discount: any) => (discount ? discount + '%' : '--'),
+		},
+		{
+			title: 'Số tiền khuyến mại (%)',
+			dataIndex: 'amountOff',
+			key: 'amountOff',
+			render: (amountOff: any) => (amountOff ? amountOff + 'VNĐ' : '--'),
 		},
 		// {
 		//     title: "Số lượt mua",
@@ -262,11 +268,9 @@ function ProductsPage() {
 	// Handle form submit (create)
 	const handleOk = async () => {
 		try {
-			console.log('Loanhtm: ');
 			setUploading(true);
-			console.log('Loanhtm: ', form);
 			const values = await form.validateFields();
-			console.log('Loanhtm variantsS: ', variantsS);
+			console.log("loanhtm values: ", values);
 			// images: array of {url}
 			const images = imageList
 				.map((file) => file.url || file.thumbUrl || file.response?.url)
@@ -345,13 +349,15 @@ function ProductsPage() {
 	const handleVariantOk = async () => {
 		try {
 			const values = await variantForm.validateFields();
-			console.log('loanhtm values: ', values);
+			console.log('loanhtmModalVarient values: ', values);
 			const payload = {
 				itemId: Number(values.itemId),
 				itemColorId: Number(values.itemColorId),
 				itemSizeId: Number(values.itemSizeId),
 				quantity: Number(values.quantity),
 				price: Number(values.price),
+				discount: Number(values.discount),
+				amountOff: Number(values.amountOff),
 			};
 
 			const res = await api.post('/item-variant/create', payload);
@@ -399,6 +405,7 @@ function ProductsPage() {
 			price: product.price,
 			itemTypeId: product.itemTypeId ?? product.item_item_type_fk?.itemTypeId,
 			discount: product.discount,
+			amountOff: product.amountOff
 			// numBuy: product.numBuy,
 			// averageStar: product.averageStar
 		});
@@ -440,6 +447,7 @@ function ProductsPage() {
 				discount: values.discount,
 				thumbnail: images[0],
 				images: images,
+				amountOff: values.amountOff,
 			});
 			message.success('Cập nhật sản phẩm thành công!');
 			setIsEditModalOpen(false);
@@ -453,7 +461,7 @@ function ProductsPage() {
 			setUploading(false);
 		}
 	};
-	console.log("loanhtm2 listProduct: ", listProduct)
+
 	return (
 		<div>
 			<Button
@@ -566,6 +574,17 @@ function ProductsPage() {
 							]}
 						>
 							<Input placeholder="Nhập phần trăm khuyến mại" />
+						</Form.Item>
+
+						<Form.Item
+							label="Số tiền khuyến mại (VNĐ)"
+							name="amountOff"
+							rules={[
+								{ required: true, message: 'Vui lòng nhập số tiền khuyến mại' },
+								{ pattern: /^\d+$/, message: 'Phải là số' },
+							]}
+						>
+							<Input placeholder="Nhập số tiền khuyến mại" />
 						</Form.Item>
 
 						<Form.Item
@@ -868,6 +887,8 @@ function ProductsPage() {
 											(1 - Number(variantProduct.discount) / 100)
 										)
 										: undefined,
+								discount: undefined,
+								amountOff: undefined,
 							}
 							: {}
 					}
@@ -931,6 +952,26 @@ function ProductsPage() {
 							style={{ width: '100%' }}
 						/>
 					</Form.Item>
+					<Form.Item
+						label="Tỷ lệ khuyến mại (%)"
+						name="discount"
+						rules={[{ required: true, message: 'Vui lòng nhập tỷ lệ khuyến mại' }]}
+					>
+						<InputNumber
+							min={0}
+							style={{ width: '100%' }}
+						/>
+					</Form.Item>
+					<Form.Item
+						label="Số tiền khuyến mại (VNĐ)"
+						name="amountOff"
+						rules={[{ required: true, message: 'Vui lòng nhập số tiền khuyến mại' }]}
+					>
+						<InputNumber
+							min={0}
+							style={{ width: '100%' }}
+						/>
+					</Form.Item>
 				</Form>
 			</Modal>
 			{/* Modal chỉnh sửa sản phẩm */}
@@ -960,6 +1001,7 @@ function ProductsPage() {
 								discount: editingProduct.discount,
 								numBuy: editingProduct.numBuy,
 								averageStar: editingProduct.averageStar,
+								amountOff: editingProduct.amountOff,
 							}
 							: {}
 					}
@@ -1050,6 +1092,16 @@ function ProductsPage() {
 						]}
 					>
 						<Input placeholder="Nhập tỷ lệ khuyến mại" />
+					</Form.Item>
+					<Form.Item
+						label="Số tiền khuyến mại (VNĐ)"
+						name="amountOff"
+						rules={[
+							{ required: true, message: 'Vui lòng nhập số tiền khuyến mại' },
+							{ pattern: /^\d+$/, message: 'Phải là số' },
+						]}
+					>
+						<Input placeholder="Nhập số tiền khuyến mại" />
 					</Form.Item>
 					<Form.Item
 						label="Ảnh sản phẩm"

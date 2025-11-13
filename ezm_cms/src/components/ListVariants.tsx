@@ -64,6 +64,16 @@ function ListVariant({ item }: Props) {
             dataIndex: 'quantity'
         },
         {
+            title: "Tỷ lệ khuyến mại (%)",
+            key: "discount",
+            dataIndex: 'discount'
+        },
+        {
+            title: "Số tiền khuyến mại (VNĐ)",
+            key: "amountOff",
+            dataIndex: 'amountOff'
+        },
+        {
             title: "Hành động",
             key: "actions",
             render: (_, rec) => <div style={{ display: "flex", gap: 6 }}>
@@ -82,7 +92,7 @@ function ListVariant({ item }: Props) {
 
         <Button onClick={toggle} size="small" type="primary">Các biến thể</Button>
 
-        <Modal open={open} onCancel={toggle} onOk={toggle} title="Danh sách các biến thể" width={680}>
+        <Modal open={open} onCancel={toggle} onOk={toggle} title="Danh sách các biến thể" width='auto'>
 
             <Table
                 columns={columns}

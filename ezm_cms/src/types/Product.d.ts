@@ -10,6 +10,7 @@ type ProductDocument = {
     status: number
     price: string
     discount: any
+    amountOff: any
     numBuy: number
     averageStar: number
     tags: any

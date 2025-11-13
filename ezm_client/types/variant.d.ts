@@ -6,6 +6,7 @@ type VariantDocument = {
     quantity: number
     price: string
     discount: any
+    amountOff: any
     status: number
     createdBy: any
     createdAt: string

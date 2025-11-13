@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { LabelWithIcon } from "../common/label-icon";
 import AuthFormRegister from "../layout/auth-form/auth-form.register";
 import { IoPersonOutline } from "react-icons/io5";
+import { calculateItemPrice } from "@/lib/utils";
 
 type Props = {
     product: ProductDocument
@@ -31,6 +32,7 @@ function ProductTool({ product, variants }: Props) {
     const [selectedColor, setSelectedColor] = useState<any | undefined>(undefined);
     const [selectedSize, setSelectedSize] = useState<any | undefined>(undefined);
     const [openLogin, setOpenLogin] = useState(false);
+    console.log("variants: ", variants);
 
     useEffect(() => {
         const savedOrder = localStorage.getItem("order");
@@ -208,7 +210,6 @@ function ProductTool({ product, variants }: Props) {
         }
     };
 
-
     return <div className="!sticky !bottom-0 flex py-2 items-center flex-col lg:flex-row space-x-0 space-y-4 lg:space-y-0 lg:space-x-2">
         {/* Bộ select size sử dụng shadcn */}
 
@@ -257,7 +258,8 @@ function ProductTool({ product, variants }: Props) {
             </button>
 
             <button onClick={orderNow} className="cursor-pointer w-full flex-grow bg-ezman-red px-6 py-1.5 text-white font-medium">
-                Mua ngay - {selectedVariant ? Number(selectedVariant?.price || 0).toLocaleString() : 0}đ
+                {/* Mua ngay - {selectedVariant ? Number(selectedVariant?.price || 0).toLocaleString() : 0}đ */}
+                Mua ngay - {selectedVariant ? calculateItemPrice(Number(selectedVariant?.price && 0), selectedVariant?.discount, selectedVariant?.amountOff) : 0}đ
             </button>
         </div>
 
