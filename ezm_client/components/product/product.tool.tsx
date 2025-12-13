@@ -125,27 +125,61 @@ function ProductTool({ product, variants }: Props) {
         const sizeObj = uniqueSizes.find(s => s.itemSizeId === Number(sizeId));
         setSelectedSize(sizeObj);
 
-        // Nếu đã chọn màu mà màu đó không tồn tại với size này → reset
-        if (selectedColor) {
-            const exist = variants.some(
-                v =>
-                    v.item_variant_item_color_fk?.itemColorId === selectedColor.itemColorId &&
-                    v.item_variant_item_size_fk?.itemSizeId === sizeObj?.itemSizeId
-            );
-            if (!exist) setSelectedColor(undefined);
+        if (!sizeObj) {
+            setSelectedVariant(undefined);
+            return;
         }
 
-        // Tìm variant khớp giữa color + size (nếu có)
-        if (selectedColor && sizeObj) {
-            const found = variants.find(
-                v =>
-                    v.item_variant_item_color_fk?.itemColorId === selectedColor.itemColorId &&
-                    v.item_variant_item_size_fk?.itemSizeId === sizeObj.itemSizeId
-            );
-            setSelectedVariant(found);
-        } else {
+        // Tìm tất cả variant có size này
+        const variantsWithSize = variants.filter(
+            v => v.item_variant_item_size_fk?.itemSizeId === sizeObj.itemSizeId
+        );
+
+        if (variantsWithSize.length === 0) {
             setSelectedVariant(undefined);
+            return;
         }
+
+        // Tự động chọn màu đầu tiên có sẵn với size này (nếu có màu)
+        let colorToUse = selectedColor;
+        const availableColors = variantsWithSize
+            .map(v => v.item_variant_item_color_fk)
+            .filter(Boolean);
+        
+        const uniqueAvailableColors = Array.from(new Map(availableColors.map(c => [c.itemColorId, c])).values());
+        
+        // Nếu có màu, tự động chọn màu đầu tiên
+        if (uniqueAvailableColors.length > 0) {
+            // Nếu đã chọn màu mà màu đó không tồn tại với size này → chọn màu đầu tiên
+            if (selectedColor) {
+                const exist = variantsWithSize.some(
+                    v => v.item_variant_item_color_fk?.itemColorId === selectedColor.itemColorId
+                );
+                if (!exist) {
+                    colorToUse = uniqueAvailableColors[0];
+                    setSelectedColor(uniqueAvailableColors[0]);
+                }
+            } else {
+                // Nếu chưa chọn màu, tự động chọn màu đầu tiên
+                colorToUse = uniqueAvailableColors[0];
+                setSelectedColor(uniqueAvailableColors[0]);
+            }
+        }
+
+        // Tìm variant khớp: nếu có màu thì tìm theo color + size, nếu không có màu thì lấy variant đầu tiên có size này
+        let found: VariantDocument | undefined;
+        
+        if (colorToUse) {
+            // Tìm variant có cả color và size
+            found = variantsWithSize.find(
+                v => v.item_variant_item_color_fk?.itemColorId === colorToUse.itemColorId
+            );
+        } else {
+            // Nếu không có màu, lấy variant đầu tiên có size này
+            found = variantsWithSize[0];
+        }
+        
+        setSelectedVariant(found);
     };
 
     const addToCart = () => {
@@ -181,8 +215,8 @@ function ProductTool({ product, variants }: Props) {
 
     const orderNow = () => {
         try {
-            if (!selectedVariant) throw new Error("Vui lòng chọn size");
-            if (!selectedColor) throw new Error("Vui lòng chọn màu");
+            if (!selectedVariant) throw new Error("Vui lòng chọn mẫu");
+            // if (!selectedColor) throw new Error("Vui lòng chọn màu");
 
             const token = localStorage.getItem("ezman-token");
             const temp = { product, variants: selectedVariant, quantity: 1 };
@@ -210,7 +244,7 @@ function ProductTool({ product, variants }: Props) {
         }
     };
 
-    return <div className="!sticky !bottom-0 flex py-2 items-center flex-col lg:flex-row space-x-0 space-y-4 lg:space-y-0 lg:space-x-2">
+    return <div className="fixed lg:sticky bottom-2 left-2 right-2 lg:bottom-0 lg:left-auto lg:right-auto z-50 bg-transparent flex py-2 items-center flex-col lg:flex-row space-x-0 space-y-4 lg:space-y-0 lg:space-x-2 shadow-lg lg:shadow-none">
         {/* Bộ select size sử dụng shadcn */}
 
         {/* Select Size */}
@@ -234,7 +268,7 @@ function ProductTool({ product, variants }: Props) {
         </div>
 
         {/* Select Màu */}
-        <div className="lg:w-44 w-full" translate="no">
+        {/* <div className="lg:w-44 w-full" translate="no">
             <Select
                 value={selectedColor ? String(selectedColor.itemColorId) : ""}
                 onValueChange={handleSelectColor}
@@ -250,7 +284,7 @@ function ProductTool({ product, variants }: Props) {
                     ))}
                 </SelectContent>
             </Select>
-        </div>
+        </div> */}
 
         <div className="lg:space-x-2 flex flex-col lg:flex-row w-full">
             <button onClick={handleAddToCart} className="cursor-pointer w-full bg-white px-6 py-1.5 text-black font-medium">
