@@ -42,14 +42,14 @@ function ProductCard(props: Props) {
                         {props.detail.name}
                     </p>
 
-                    <div className="flex gap-6 items-center">
+                    <div className="flex gap-3 items-center">
                         <span className="font-medium text-white text-sm lg:text-base">
                             {(
                                 Number(props.detail.price) * (1 - (Number(props.detail.discount ?? 0) / 100))
                             ).toLocaleString()}đ
                         </span>
                         <span className="font-medium text-gray-400 text-sm lg:text-base line-through">{Number(props.detail.price).toLocaleString()}đ</span>
-                        <span className="hidden lg:flex text-red-400">[-{props.detail.discount}%]</span>
+                        <span className="flex text-red-400">[-{props.detail.discount}%]</span>
                     </div>
                 </div>
             </div>
