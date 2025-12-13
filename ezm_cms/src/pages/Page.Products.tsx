@@ -301,6 +301,57 @@ function ProductsPage() {
 		setVariantsS([]);
 	};
 
+	// Lưu dữ liệu vào localStorage
+	const saveToLocalStorage = (formValues: any, images: any[], variants: any[]) => {
+		const dataToSave = {
+			formValues: formValues,
+			images: images.map((file) => ({
+				uid: file.uid,
+				name: file.name,
+				url: file.url || file.thumbUrl,
+				thumbUrl: file.thumbUrl || file.url,
+				status: 'done',
+			})),
+			variants: variants,
+			timestamp: new Date().toISOString(),
+		};
+		localStorage.setItem('product_recent_data', JSON.stringify(dataToSave));
+	};
+
+	// Load dữ liệu từ localStorage và điền vào form
+	const loadRecentData = () => {
+		try {
+			const savedData = localStorage.getItem('product_recent_data');
+			if (!savedData) {
+				message.warning('Không có dữ liệu gần đây!');
+				return;
+			}
+
+			const data = JSON.parse(savedData);
+			
+			// Điền form values
+			if (data.formValues) {
+				form.setFieldsValue(data.formValues);
+			}
+
+			// Điền images
+			if (data.images && data.images.length > 0) {
+				setImageList(data.images);
+			}
+
+			// Điền variants
+			if (data.variants && data.variants.length > 0) {
+				setVariantsS(data.variants);
+			}
+
+			// Mở modal
+			setIsModalOpen(true);
+			message.success('Đã tải dữ liệu gần đây!');
+		} catch {
+			message.error('Lỗi khi tải dữ liệu gần đây!');
+		}
+	};
+
 	// Handle form submit (create)
 	const handleOk = async () => {
 		try {
@@ -333,10 +384,13 @@ function ProductsPage() {
 			});
 			if (res.data.status == 0) {
 				message.success('Tạo sản phẩm thành công!');
+				// Lưu dữ liệu vào localStorage trước khi reset
+				saveToLocalStorage(values, imageList, variantsS);
 				setIsModalOpen(false);
 				// message.success("Tạo sản phẩm thành công!");
 				form.resetFields();
 				setImageList([]);
+				setVariantsS([]);
 				loadItems();
 			} else {
 				// setIsModalOpen(false);
@@ -539,7 +593,23 @@ function ProductsPage() {
 			/>
 			{/* Modal tạo sản phẩm */}
 			<Modal
-				title="Tạo sản phẩm mới"
+				title={
+					<div style={{ display: 'flex', alignItems: 'center' }}>
+						<span>Tạo sản phẩm mới</span>
+						<Button
+							size="small"
+							onClick={loadRecentData}
+							style={{ 
+								marginLeft: '30px',
+								backgroundColor: '#722ed1',
+								borderColor: '#722ed1',
+								color: '#fff'
+							}}
+						>
+							Tạo gần đây
+						</Button>
+					</div>
+				}
 				open={isModalOpen}
 				onOk={handleOk}
 				onCancel={handleCancel}
