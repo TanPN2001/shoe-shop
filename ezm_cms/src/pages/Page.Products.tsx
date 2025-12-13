@@ -130,6 +130,42 @@ function ProductsPage() {
 			key: 'brand',
 		},
 		{
+			title: 'Tags',
+			dataIndex: 'tags',
+			key: 'tags',
+			render: (tags: any) => {
+				if (!tags) return '—';
+				// Xử lý cả mảng và string
+				const tagsArray = Array.isArray(tags) 
+					? tags 
+					: typeof tags === 'string' 
+						? tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag.length > 0)
+						: [];
+				
+				if (tagsArray.length === 0) return '—';
+				
+				return (
+					<div style={{ maxWidth: 200 }}>
+						{tagsArray.map((tag: string, index: number) => (
+							<span
+								key={index}
+								style={{
+									display: 'inline-block',
+									backgroundColor: '#f0f0f0',
+									padding: '2px 8px',
+									margin: '2px',
+									borderRadius: '4px',
+									fontSize: '12px',
+								}}
+							>
+								{tag}
+							</span>
+						))}
+					</div>
+				);
+			},
+		},
+		{
 			title: 'Ảnh',
 			dataIndex: 'thumbnail',
 			key: 'thumbnail',
@@ -282,9 +318,15 @@ function ProductsPage() {
 				return;
 			}
 
+			// Chuyển tags từ string sang mảng
+			const tagsArray = values.tags
+				? values.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag.length > 0)
+				: [];
+
 			const res = await api.post('/item/create-variation', {
 				// await api.post("/item/create-variation", {
 				...values,
+				tags: tagsArray,
 				thumbnail: images[0],
 				images: images,
 				variants: variantsS,
@@ -397,6 +439,11 @@ function ProductsPage() {
 		}));
 		setEditImageList(fileList);
 
+		// Chuyển tags từ mảng sang string (nếu có)
+		const tagsString = Array.isArray(product.tags) 
+			? product.tags.join(', ') 
+			: product.tags || '';
+
 		editForm.setFieldsValue({
 			name: product.name,
 			code: product.code,
@@ -405,7 +452,8 @@ function ProductsPage() {
 			price: product.price,
 			itemTypeId: product.itemTypeId ?? product.item_item_type_fk?.itemTypeId,
 			discount: product.discount,
-			amountOff: product.amountOff
+			amountOff: product.amountOff,
+			tags: tagsString,
 			// numBuy: product.numBuy,
 			// averageStar: product.averageStar
 		});
@@ -434,6 +482,11 @@ function ProductsPage() {
 				setUploading(false);
 				return;
 			}
+			// Chuyển tags từ string sang mảng
+			const tagsArray = values.tags
+				? values.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag.length > 0)
+				: [];
+
 			await api.post('/item/update', {
 				itemId: editingProduct.itemId,
 				name: values.name,
@@ -448,6 +501,7 @@ function ProductsPage() {
 				thumbnail: images[0],
 				images: images,
 				amountOff: values.amountOff,
+				tags: tagsArray,
 			});
 			message.success('Cập nhật sản phẩm thành công!');
 			setIsEditModalOpen(false);
@@ -585,6 +639,13 @@ function ProductsPage() {
 							]}
 						>
 							<Input placeholder="Nhập số tiền khuyến mại" />
+						</Form.Item>
+
+						<Form.Item
+							label="Tags (phân tách bằng dấu phẩy)"
+							name="tags"
+						>
+							<Input placeholder="Nhập tags, ví dụ: tag1, tag2, tag3" />
 						</Form.Item>
 
 						<Form.Item
@@ -1002,6 +1063,9 @@ function ProductsPage() {
 								numBuy: editingProduct.numBuy,
 								averageStar: editingProduct.averageStar,
 								amountOff: editingProduct.amountOff,
+								tags: Array.isArray(editingProduct.tags) 
+									? editingProduct.tags.join(', ') 
+									: editingProduct.tags || '',
 							}
 							: {}
 					}
@@ -1102,6 +1166,12 @@ function ProductsPage() {
 						]}
 					>
 						<Input placeholder="Nhập số tiền khuyến mại" />
+					</Form.Item>
+					<Form.Item
+						label="Tags (phân tách bằng dấu phẩy)"
+						name="tags"
+					>
+						<Input placeholder="Nhập tags, ví dụ: tag1, tag2, tag3" />
 					</Form.Item>
 					<Form.Item
 						label="Ảnh sản phẩm"
