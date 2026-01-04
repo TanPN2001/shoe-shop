@@ -1,21 +1,47 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Table, Button, Modal, Form, Input, message, Select, Popconfirm } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import api from "../api";
 import { useAtom } from "jotai";
 import { SIZES, type ItemSize } from "../store";
+import { InitPaging, type Paging } from "../paging";
 
 
 function ProductSizesPage() {
   const [sizes, setSizes] = useAtom(SIZES)
+  const [paging, setPaging] = useState<Paging>(InitPaging);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form] = Form.useForm()
 
-  const load = () => {
-    api.get("/item-size/get").then(res => {
+  const load = (pageIndex: number = paging.pageIndex, pageSize: number = paging.pageSize) => {
+    // Chuyển đổi pageIndex từ 1-based (Ant Design) sang 0-based (API)
+    const apiPage = pageIndex - 1;
+    api.get("/item-size/get", {
+      params: {
+        page: apiPage,
+        limit: pageSize,
+        orderBy: "size",
+        orderMode: "DESC"
+      }
+    }).then(res => {
       setSizes(res.data.data)
+      if (res.data.count !== undefined) {
+        setPaging({
+          ...paging,
+          pageIndex: pageIndex,
+          pageSize: pageSize,
+          total: res.data.count
+        })
+      } else if (res.data.paging) {
+        setPaging(res.data.paging)
+      }
     })
   }
+
+  useEffect(() => {
+    load(1, InitPaging.pageSize)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const deleteSize = async (rec: ItemSize) => {
     await api.delete(`/item-size/delete/${rec.itemSizeId}`)
@@ -52,12 +78,16 @@ function ProductSizesPage() {
       try {
         await api.post("/item-size/create", payload);
         load()
-      } catch { }
+      } catch (error) {
+        console.error("Lỗi khi tạo size:", error);
+      }
 
       message.success("Tạo size sản phẩm thành công!");
       setIsModalOpen(false);
       form.resetFields();
-    } catch { }
+    } catch (error) {
+      console.error("Lỗi khi validate form:", error);
+    }
   };
 
   return (
@@ -69,7 +99,21 @@ function ProductSizesPage() {
         columns={columns}
         rowKey={"itemSizeId"}
         dataSource={sizes}
-        pagination={false}
+        pagination={{
+          current: paging.pageIndex,
+          pageSize: paging.pageSize,
+          total: paging.total,
+          showSizeChanger: true,
+          showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} mục`,
+          onChange: (page, pageSize) => {
+            setPaging({ ...paging, pageIndex: page, pageSize });
+            load(page, pageSize);
+          },
+          onShowSizeChange: (_current, size) => {
+            setPaging({ ...paging, pageIndex: 1, pageSize: size });
+            load(1, size);
+          }
+        }}
       />
       <Modal
         title="Tạo size sản phẩm"
